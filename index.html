@@ -903,8 +903,8 @@
           <p class="page-desc">บันทึกข้อมูลผู้บริจาคและพิมพ์ใบสมัคร</p>
         </div>
 
-        <div class="container-fluid px-0">
-          <div class="main-card">
+        <div class="container-fluid px-0" id="table-mount-today">
+          <div class="main-card" id="visit-table-card">
 
       <h2 class="header-title">🩸 ลงทะเบียนผู้บริจาคโลหิต</h2>
 
@@ -965,7 +965,7 @@
             
       <div class="row g-2 align-items-center mb-3">
         <div class="col-auto">
-          <h4 class="text-primary fw-bold m-0">📋 รายชื่อผู้บริจาควันนี้</h4>
+          <h4 class="text-primary fw-bold m-0" id="visit-table-title">📋 รายชื่อผู้บริจาควันนี้</h4>
         </div>
 
         <div class="col-auto ms-auto d-flex gap-2 align-items-center">
@@ -1000,10 +1000,7 @@
           <p class="page-desc">เลือกผู้บริจาคจากรายชื่อวันนี้ แล้วกดปุ่มพิมพ์ใบสมัคร</p>
         </div>
 
-        <div class="menu-helper-card">
-          <p class="mb-3">ตอนนี้ระบบใช้ปุ่มพิมพ์จากตารางรายชื่อผู้บริจาควันนี้ก่อน</p>
-          <button class="btn btn-primary" onclick="showPage('today')">ไปที่รายชื่อผู้บริจาควันนี้</button>
-        </div>
+        <div class="container-fluid px-0" id="table-mount-print-a4"></div>
       </section>
 
       <section class="page-section" id="page-screening">
@@ -1012,10 +1009,7 @@
           <p class="page-desc">เลือก DN จากรายชื่อวันนี้ แล้วกดปุ่มลงผลคัดกรอง</p>
         </div>
 
-        <div class="menu-helper-card">
-          <p class="mb-3">ตอนนี้ระบบใช้ปุ่มคัดกรองจากตารางรายชื่อผู้บริจาควันนี้ก่อน</p>
-          <button class="btn btn-primary" onclick="showPage('today')">ไปที่รายชื่อผู้บริจาควันนี้</button>
-        </div>
+        <div class="container-fluid px-0" id="table-mount-screening"></div>
       </section>
 
       <section class="page-section" id="page-sticker">
@@ -1024,10 +1018,7 @@
           <p class="page-desc">เลือกผู้บริจาคที่มีเลขถุงแล้วจากรายชื่อวันนี้</p>
         </div>
 
-        <div class="menu-helper-card">
-          <p class="mb-3">ตอนนี้ระบบใช้ปุ่มพิมพ์สติ๊กเกอร์จากตารางรายชื่อผู้บริจาควันนี้ก่อน</p>
-          <button class="btn btn-primary" onclick="showPage('today')">ไปที่รายชื่อผู้บริจาควันนี้</button>
-        </div>
+        <div class="container-fluid px-0" id="table-mount-sticker"></div>
       </section>
 
       <section class="page-section" id="page-certificate">
@@ -1036,10 +1027,7 @@
           <p class="page-desc">ออกเลขและพิมพ์หนังสือรับรองการบริจาคโลหิต</p>
         </div>
 
-        <div class="menu-helper-card">
-          <p class="mb-3">ตอนนี้ระบบใช้ปุ่มพิมพ์ใบรับรองจากตารางรายชื่อผู้บริจาควันนี้ก่อน</p>
-          <button class="btn btn-primary" onclick="showPage('today')">ไปที่รายชื่อผู้บริจาควันนี้</button>
-        </div>
+        <div class="container-fluid px-0" id="table-mount-certificate"></div>
       </section>
 
       <section class="page-section" id="page-settings">
@@ -1369,7 +1357,40 @@
       }
     }
 
-    function showPage(pageName) {
+    let currentTableMode = "today";
+
+function isTablePage(pageName) {
+  return ["today", "print-a4", "screening", "sticker", "certificate"].includes(pageName);
+}
+
+function moveVisitTableTo(pageName) {
+  const card = document.getElementById("visit-table-card");
+  const mount = document.getElementById("table-mount-" + pageName);
+
+  if (card && mount && !mount.contains(card)) {
+    mount.appendChild(card);
+  }
+
+  currentTableMode = pageName;
+  updateVisitTableTitle(pageName);
+}
+
+function updateVisitTableTitle(mode) {
+  const titleMap = {
+    "today": "📋 รายชื่อผู้บริจาควันนี้",
+    "print-a4": "📄 พิมพ์ใบสมัคร",
+    "screening": "🩺 คัดกรองผู้บริจาค",
+    "sticker": "🏷️ พิมพ์สติ๊กเกอร์",
+    "certificate": "📜 หนังสือรับรอง"
+  };
+
+  const titleEl = document.getElementById("visit-table-title");
+  if (titleEl) {
+    titleEl.innerText = titleMap[mode] || titleMap.today;
+  }
+}
+
+function showPage(pageName) {
   document.querySelectorAll(".page-section").forEach(section => {
     section.classList.remove("active");
   });
@@ -1390,11 +1411,93 @@
 
   closeSidebar();
 
-  if (pageName === "today" || pageName === "dashboard") {
+  if (isTablePage(pageName)) {
+    moveVisitTableTo(pageName);
+    loadTable();
+  }
+
+  if (pageName === "dashboard") {
     loadTable();
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function rowIsPending(row) {
+  return !row.status || row.status === "รอคัดกรอง";
+}
+
+function rowHasBag(row) {
+  return row.bag && row.bag !== "" && row.bag !== "-";
+}
+
+function filterByCurrentTableMode(data) {
+  if (currentTableMode === "screening") {
+    return data.filter(row => rowIsPending(row) && !rowHasBag(row));
+  }
+
+  if (currentTableMode === "sticker") {
+    return data.filter(row => rowHasBag(row));
+  }
+
+  if (currentTableMode === "certificate") {
+    return data.filter(row => row.status === "ผ่าน" && rowHasBag(row));
+  }
+
+  return data;
+}
+
+function buildActionButtons(row, rowStr, disableScreen) {
+  const editBtn = `
+    <button class="btn btn-sm action-btn action-btn-edit"
+      onclick="event.stopPropagation(); prepareEdit('${rowStr}')">✏️ แก้ไขข้อมูล</button>
+  `;
+
+  const printA4Btn = `
+    <button class="btn btn-sm action-btn action-btn-print"
+      onclick="event.stopPropagation(); printA4FromRow('${rowStr}')">📄 พิมพ์ใบสมัคร</button>
+  `;
+
+  const certBtn = `
+    <button class="btn btn-sm action-btn action-btn-cert"
+      onclick="event.stopPropagation(); printCertificateFromRow('${rowStr}')">📜 พิมพ์ใบรับรอง</button>
+  `;
+
+  const screeningBtn = `
+    <button class="btn btn-sm action-btn action-btn-screen"
+      onclick="event.stopPropagation(); openScreening('${rowStr}')" ${disableScreen}>🩺 ลงผลคัดกรอง</button>
+  `;
+
+  const stickerBtn = `
+    <button class="btn btn-sm action-btn action-btn-sticker"
+      onclick="event.stopPropagation(); reprintTSCFromRow('${rowStr}')">🏷️ พิมพ์สติ๊กเกอร์</button>
+  `;
+
+  if (currentTableMode === "print-a4") {
+    return `<div class="btn-group">${printA4Btn}</div>`;
+  }
+
+  if (currentTableMode === "screening") {
+    return `<div class="btn-group">${screeningBtn}</div>`;
+  }
+
+  if (currentTableMode === "sticker") {
+    return `<div class="btn-group">${stickerBtn}</div>`;
+  }
+
+  if (currentTableMode === "certificate") {
+    return `<div class="btn-group">${certBtn}</div>`;
+  }
+
+  return `
+    <div class="btn-group">
+      ${editBtn}
+      ${printA4Btn}
+      ${certBtn}
+      ${screeningBtn}
+      ${stickerBtn}
+    </div>
+  `;
 }
 
 function openSidebar() {
@@ -1544,61 +1647,48 @@ function logout() {
           );
         }
 
+        filteredData = filterByCurrentTableMode(filteredData);
+
         if (filteredData.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center">ไม่พบ DN ที่ค้นหา</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center">ไม่พบข้อมูลที่ตรงกับเมนูนี้</td></tr>';
           return;
         }
 
         let html = "";
 
         filteredData.forEach((row, index) => {
-          let badgeClass = "bg-warning text-dark";
-          let statusText = "รอคัดกรอง";
+  let badgeClass = "bg-warning text-dark";
+  let statusText = "รอคัดกรอง";
 
-          if (row.status === "ผ่าน") {
-            badgeClass = "bg-success";
-            statusText = "ผ่าน";
-          } else if (row.status === "ไม่ผ่าน") {
-            badgeClass = "bg-danger";
-            statusText = "ไม่ผ่าน";
-          }
+  if (row.status === "ผ่าน") {
+    badgeClass = "bg-success";
+    statusText = "ผ่าน";
+  } else if (row.status === "ไม่ผ่าน") {
+    badgeClass = "bg-danger";
+    statusText = "ไม่ผ่าน";
+  }
 
-          let rowStr = encodeURIComponent(JSON.stringify(row));
-          let isPending = (row.status === "รอคัดกรอง" || !row.status);
-          let hasBag = (row.bag && row.bag !== "" && row.bag !== "-");
-          let disableScreen = (hasBag || !isPending) ? "disabled" : "";
+  let rowStr = encodeURIComponent(JSON.stringify(row));
+  let isPending = rowIsPending(row);
+  let hasBag = rowHasBag(row);
+  let disableScreen = (hasBag || !isPending) ? "disabled" : "";
 
-          html += `
-            <tr onclick="openVisitDetail('${rowStr}')">
-              <td>${filteredData.length - index}</td>
-              <td>${escapeHtml(row.dn)}</td>
-              <td>
-                <strong>${escapeHtml(row.name)}</strong><br>
-                <small class="text-muted">วัน/เดือน/ปีเกิด: ${escapeHtml(row.birth)}</small>
-              </td>
-              <td><span class="badge ${badgeClass}" style="width:80px">${statusText}</span></td>
-              <td><strong class="text-primary">${escapeHtml(row.bag || "-")}</strong></td>
-              <td>
-                <div class="btn-group">
-                  <button class="btn btn-sm action-btn action-btn-edit"
-                    onclick="event.stopPropagation(); prepareEdit('${rowStr}')">✏️ แก้ไขข้อมูล</button>
-
-                  <button class="btn btn-sm action-btn action-btn-print"
-                    onclick="event.stopPropagation(); printA4FromRow('${rowStr}')">📄 พิมพ์ใบสมัคร</button>
-
-                  <button class="btn btn-sm action-btn action-btn-cert"
-                    onclick="event.stopPropagation(); printCertificateFromRow('${rowStr}')">📜 พิมพ์ใบรับรอง</button>
-
-                  <button class="btn btn-sm action-btn action-btn-screen"
-                    onclick="event.stopPropagation(); openScreening('${rowStr}')" ${disableScreen}>🩺 ลงผลคัดกรอง</button>
-
-                  <button class="btn btn-sm action-btn action-btn-sticker"
-                    onclick="event.stopPropagation(); reprintTSCFromRow('${rowStr}')">🏷️ พิมพ์สติ๊กเกอร์</button>
-                </div>
-              </td>
-            </tr>
-          `;
-        });
+  html += `
+    <tr onclick="openVisitDetail('${rowStr}')">
+      <td>${filteredData.length - index}</td>
+      <td>${escapeHtml(row.dn)}</td>
+      <td>
+        <strong>${escapeHtml(row.name)}</strong><br>
+        <small class="text-muted">วัน/เดือน/ปีเกิด: ${escapeHtml(row.birth)}</small>
+      </td>
+      <td><span class="badge ${badgeClass}" style="width:80px">${statusText}</span></td>
+      <td><strong class="text-primary">${escapeHtml(row.bag || "-")}</strong></td>
+      <td>
+        ${buildActionButtons(row, rowStr, disableScreen)}
+      </td>
+    </tr>
+  `;
+});
 
         tbody.innerHTML = html;
 
