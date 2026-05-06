@@ -1146,15 +1146,42 @@
       </section>
 
       <section class="page-section" id="page-settings">
-        <div class="page-title-card">
-          <h1 class="page-title">Users / Settings</h1>
-          <p class="page-desc">ส่วนนี้จะทำใน Phase 2 พร้อมระบบ Login / Logout</p>
-        </div>
+  <div class="page-title-card">
+    <h1 class="page-title">Users / Settings</h1>
+    <p class="page-desc">จัดการผู้ใช้งานระบบและตรวจสอบสถานะบัญชี</p>
+  </div>
 
-        <div class="menu-helper-card">
-          <p class="mb-0">Phase 1 จะวางหน้าไว้ก่อน ส่วนระบบผู้ใช้จริงจะเชื่อมกับชีต Users ใน Phase 2</p>
-        </div>
-      </section>
+  <div class="main-card">
+    <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+      <h4 class="text-primary fw-bold m-0">⚙️ รายชื่อผู้ใช้งานระบบ</h4>
+      <button id="users-refresh-btn" class="btn btn-primary btn-sm" onclick="loadUsersSettings()">🔄 โหลดรายชื่อ</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Username</th>
+            <th>ชื่อ-นามสกุล</th>
+            <th>Role</th>
+            <th>Position</th>
+            <th>Approval</th>
+            <th>Active</th>
+            <th>First Login</th>
+            <th>Email</th>
+            <th>Last Login</th>
+          </tr>
+        </thead>
+        <tbody id="users-table-body">
+          <tr>
+            <td colspan="9" class="text-center text-muted">กดโหลดรายชื่อผู้ใช้งาน</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+      
     </main>
   </div>
 
@@ -1697,6 +1724,10 @@ function showPage(pageName) {
 
   if (pageName === "dashboard") {
     loadTable();
+  }
+
+  if (pageName === "settings") {
+    loadUsersSettings();
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2269,6 +2300,79 @@ async function resetPasswordWithOtp() {
       if (pendingEl) pendingEl.innerText = pending;
     }
 
+    async function loadUsersSettings() {
+  const tbody = document.getElementById("users-table-body");
+
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="9" class="text-center">⌛ กำลังโหลดรายชื่อผู้ใช้งาน...</td></tr>';
+
+  try {
+    setButtonBusy("users-refresh-btn", true, "⏳ โหลด...");
+
+    const res = await apiCall("listUsers", {});
+
+    if (!res || res.status !== "success") {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" class="text-center text-danger">
+            ${escapeHtml((res && res.message) ? res.message : "โหลดรายชื่อผู้ใช้งานไม่สำเร็จ")}
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const users = res.users || [];
+
+    if (users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">ไม่พบรายชื่อผู้ใช้งาน</td></tr>';
+      return;
+    }
+
+    let html = "";
+
+    users.forEach(user => {
+      const activeBadge = user.active
+        ? '<span class="badge bg-success">Active</span>'
+        : '<span class="badge bg-secondary">Inactive</span>';
+
+      const firstLoginBadge = user.mustChangePassword
+        ? '<span class="badge bg-warning text-dark">รอเปลี่ยนรหัส</span>'
+        : '<span class="badge bg-success">ตั้งรหัสแล้ว</span>';
+
+      html += `
+        <tr>
+          <td><strong>${escapeHtml(user.username)}</strong></td>
+          <td>${escapeHtml(user.fullName)}</td>
+          <td><span class="badge bg-primary">${escapeHtml(user.role)}</span></td>
+          <td>${escapeHtml(user.position)}</td>
+          <td>${escapeHtml(user.approvalLevel)}</td>
+          <td>${activeBadge}</td>
+          <td>${firstLoginBadge}</td>
+          <td>${escapeHtml(user.email || "-")}</td>
+          <td>${escapeHtml(user.lastLogin || "-")}</td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = html;
+
+  } catch (err) {
+    console.error("loadUsersSettings error =", err);
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="text-center text-danger">
+          เกิดข้อผิดพลาด: ${escapeHtml(err.message || err)}
+        </td>
+      </tr>
+    `;
+  } finally {
+    setButtonBusy("users-refresh-btn", false);
+  }
+}
+    
     async function loadTable() {
       const dateInput = document.getElementById("table-date").value;
       const dnQuery = (document.getElementById("dn-search")?.value || "").trim().toLowerCase();
