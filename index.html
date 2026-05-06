@@ -788,11 +788,128 @@
         display: none !important;
       }
     }
+
+      /* ===== Login Page ===== */
+.login-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background:
+    radial-gradient(circle at top left, #dff1ff 0, transparent 34%),
+    linear-gradient(135deg, #f7fbff 0%, #eaf4ff 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--cnmi-blue-border);
+  border-radius: 26px;
+  padding: 34px;
+  box-shadow: 0 18px 42px rgba(47, 128, 237, 0.16);
+}
+
+.login-logo {
+  width: 86px;
+  height: 86px;
+  border-radius: 28px;
+  background: #4aa3eb;
+  display: grid;
+  place-items: center;
+  font-size: 42px;
+  margin: 0 auto 18px auto;
+  box-shadow: 0 14px 32px rgba(47, 128, 237, 0.20);
+}
+
+.login-title {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--cnmi-blue-dark);
+  margin-bottom: 8px;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: var(--cnmi-muted);
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.login-note {
+  background: #eaf4ff;
+  border: 1px solid #b8dafc;
+  color: #185abc;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 14px;
+  margin-bottom: 18px;
+}
+
+.login-link-btn {
+  border: 0;
+  background: transparent;
+  color: var(--cnmi-blue-dark);
+  font-weight: 700;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.login-error {
+  display: none;
+  background: #fff0f0;
+  color: #c62828;
+  border: 1px solid #ffc9c9;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.auth-hidden {
+  display: none !important;
+}
+    
   </style>
 </head>
 
 <body>
-  <div class="app-layout">
+  <body>
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">🩸</div>
+
+      <div class="login-title">CNMI Donor</div>
+      <div class="login-subtitle">Blood Donation System</div>
+
+      <div class="login-note">
+        <strong>Login ครั้งแรก:</strong> ใช้ Username เดียวกันกับรหัสผ่าน<br>
+        เช่น Username = <strong>020305</strong> ให้ใส่รหัสผ่านเริ่มต้นเป็น <strong>020305</strong><br>
+        หลังเข้าสู่ระบบครั้งแรก ระบบจะบังคับเปลี่ยนรหัสผ่านทันที
+      </div>
+
+      <div class="login-error" id="login-error"></div>
+
+      <div class="mb-3">
+        <label class="fw-bold">Username / รหัสพนักงาน</label>
+        <input type="text" id="login-username" class="form-control form-control-lg" placeholder="เช่น 020305">
+      </div>
+
+      <div class="mb-3">
+        <label class="fw-bold">รหัสผ่าน</label>
+        <input type="password" id="login-password" class="form-control form-control-lg" placeholder="ใส่รหัสผ่าน">
+      </div>
+
+      <button id="login-btn" class="btn btn-primary btn-lg w-100 mb-3" onclick="login()">↪ เข้าสู่ระบบ</button>
+
+      <div class="text-center">
+        <button class="login-link-btn" onclick="openForgotPasswordModal()">ลืมรหัสผ่าน?</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-layout auth-hidden" id="app-layout">
+    
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
         <div class="sidebar-logo">🩸</div>
@@ -848,8 +965,8 @@
         <div class="user-card">
           <div class="user-avatar">👤</div>
           <div>
-            <div class="user-name">Phase 1</div>
-            <div class="user-role">ยังไม่เปิด Login จริง</div>
+            <div class="user-name" id="sidebar-user-name">-</div>
+            <div class="user-role" id="sidebar-user-role">-</div>
           </div>
         </div>
 
@@ -1041,6 +1158,92 @@
     </main>
   </div>
 
+     <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">🔐 เปลี่ยนรหัสผ่านครั้งแรก</h5>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert alert-info">
+          เพื่อความปลอดภัย กรุณาเปลี่ยนรหัสผ่านก่อนเริ่มใช้งานระบบ<br>
+          รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร และมีตัวพิมพ์เล็ก ตัวพิมพ์ใหญ่ และตัวเลข
+        </div>
+
+        <div class="mb-3">
+          <label class="fw-bold">รหัสผ่านเดิม</label>
+          <input type="password" id="change-current-password" class="form-control" placeholder="รหัสผ่านเดิม">
+        </div>
+
+        <div class="mb-3">
+          <label class="fw-bold">รหัสผ่านใหม่</label>
+          <input type="password" id="change-new-password" class="form-control" placeholder="เช่น Bloodbank2026">
+        </div>
+
+        <div class="mb-3">
+          <label class="fw-bold">ยืนยันรหัสผ่านใหม่</label>
+          <input type="password" id="change-confirm-password" class="form-control" placeholder="ใส่ซ้ำอีกครั้ง">
+        </div>
+
+        <div class="text-danger fw-bold" id="change-password-error" style="display:none;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="change-password-btn" class="btn btn-primary w-100" onclick="submitChangePassword()">บันทึกรหัสผ่านใหม่</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title">🔑 ลืมรหัสผ่าน</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert alert-info">
+          กรอก Username ระบบจะส่งรหัส OTP ไปยังอีเมลมหิดลที่ลงทะเบียนไว้ในชีต Users
+        </div>
+
+        <div class="mb-3">
+          <label class="fw-bold">Username / รหัสพนักงาน</label>
+          <input type="text" id="forgot-username" class="form-control" placeholder="เช่น 020305">
+        </div>
+
+        <button id="forgot-send-btn" class="btn btn-primary w-100 mb-3" onclick="sendForgotPasswordOtp()">ส่งรหัส OTP ไปที่อีเมล</button>
+
+        <hr>
+
+        <div class="mb-3">
+          <label class="fw-bold">รหัส OTP</label>
+          <input type="text" id="forgot-otp" class="form-control" placeholder="รหัส 6 หลักจากอีเมล">
+        </div>
+
+        <div class="mb-3">
+          <label class="fw-bold">รหัสผ่านใหม่</label>
+          <input type="password" id="forgot-new-password" class="form-control" placeholder="เช่น Bloodbank2026">
+        </div>
+
+        <div class="mb-3">
+          <label class="fw-bold">ยืนยันรหัสผ่านใหม่</label>
+          <input type="password" id="forgot-confirm-password" class="form-control" placeholder="ใส่ซ้ำอีกครั้ง">
+        </div>
+
+        <div id="forgot-message" class="fw-bold" style="display:none;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="forgot-reset-btn" class="btn btn-success w-100" onclick="resetPasswordWithOtp()">ตั้งรหัสผ่านใหม่</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
   <div class="modal fade" id="screeningModal" tabindex="-1" aria-hidden="true">
     
     <div class="modal-dialog modal-lg">
@@ -1284,6 +1487,10 @@
 
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxmAMXoX2QEs3T-xb0Gyo-bBX2o-XUJ8n9YVb_rjiGDHee3xHs1sAiZf5CbZHkZI9BbQ/exec";
     const API_TIMEOUT_MS = 30000;
+    const TOKEN_KEY = "cnmi_donor_token";
+    const USER_KEY = "cnmi_donor_user";
+    let currentToken = localStorage.getItem(TOKEN_KEY) || "";
+    let currentUser = null;
 
     function apiCall(action, params = {}) {
       return new Promise((resolve, reject) => {
@@ -1508,8 +1715,353 @@ function closeSidebar() {
   document.getElementById("sidebar-backdrop")?.classList.remove("show");
 }
 
-function logout() {
-  alert("Phase 2 จะเชื่อม Logout กับ sessionToken จริง");
+async function logout() {
+  try {
+    if (currentToken) {
+      await apiCall("logout", {
+        data: JSON.stringify({
+          token: currentToken,
+          userAgent: getUserAgentText()
+        })
+      });
+    }
+  } catch (err) {
+    console.error("logout error =", err);
+  }
+
+  clearSession();
+  showLoginScreen();
+}
+
+    function getUserAgentText() {
+  return navigator.userAgent || "";
+}
+
+function showLoginError(message) {
+  const el = document.getElementById("login-error");
+  if (!el) return;
+
+  el.innerText = message || "เกิดข้อผิดพลาด";
+  el.style.display = "block";
+}
+
+function clearLoginError() {
+  const el = document.getElementById("login-error");
+  if (!el) return;
+
+  el.innerText = "";
+  el.style.display = "none";
+}
+
+function showLoginScreen() {
+  document.getElementById("login-screen")?.classList.remove("auth-hidden");
+  document.getElementById("app-layout")?.classList.add("auth-hidden");
+}
+
+function showAppScreen() {
+  document.getElementById("login-screen")?.classList.add("auth-hidden");
+  document.getElementById("app-layout")?.classList.remove("auth-hidden");
+}
+
+function saveSession(token, user) {
+  currentToken = token || "";
+  currentUser = user || null;
+
+  localStorage.setItem(TOKEN_KEY, currentToken);
+  localStorage.setItem(USER_KEY, JSON.stringify(currentUser || {}));
+
+  updateSidebarUser();
+}
+
+function clearSession() {
+  currentToken = "";
+  currentUser = null;
+
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+
+  updateSidebarUser();
+}
+
+function updateSidebarUser() {
+  const nameEl = document.getElementById("sidebar-user-name");
+  const roleEl = document.getElementById("sidebar-user-role");
+
+  if (nameEl) {
+    nameEl.innerText = currentUser?.fullName || "-";
+  }
+
+  if (roleEl) {
+    roleEl.innerText = currentUser?.role || "-";
+  }
+}
+
+async function initAuth() {
+  const storedUser = localStorage.getItem(USER_KEY);
+
+  if (storedUser) {
+    try {
+      currentUser = JSON.parse(storedUser);
+    } catch (err) {
+      currentUser = null;
+    }
+  }
+
+  if (!currentToken) {
+    showLoginScreen();
+    return;
+  }
+
+  try {
+    const res = await apiCall("getSessionUser", {
+      data: JSON.stringify({
+        token: currentToken
+      })
+    });
+
+    if (!res || res.status !== "success") {
+      clearSession();
+      showLoginScreen();
+      return;
+    }
+
+    currentUser = res.user;
+    saveSession(currentToken, currentUser);
+    showAppScreen();
+    showPage("dashboard");
+
+    if (currentUser.mustChangePassword) {
+      openChangePasswordModal();
+    }
+
+  } catch (err) {
+    console.error("initAuth error =", err);
+    clearSession();
+    showLoginScreen();
+  }
+}
+
+async function login() {
+  clearLoginError();
+
+  const username = document.getElementById("login-username").value.trim();
+  const password = document.getElementById("login-password").value;
+
+  if (!username || !password) {
+    showLoginError("กรุณาระบุ username และรหัสผ่าน");
+    return;
+  }
+
+  try {
+    setButtonBusy("login-btn", true, "⏳ กำลังเข้าสู่ระบบ...");
+
+    const res = await apiCall("login", {
+      data: JSON.stringify({
+        username: username,
+        password: password,
+        userAgent: getUserAgentText()
+      })
+    });
+
+    if (!res || res.status !== "success") {
+      showLoginError((res && res.message) ? res.message : "เข้าสู่ระบบไม่สำเร็จ");
+      return;
+    }
+
+    saveSession(res.token, res.user);
+    showAppScreen();
+    showPage("dashboard");
+
+    document.getElementById("login-password").value = "";
+
+    if (res.mustChangePassword || res.user?.mustChangePassword) {
+      openChangePasswordModal();
+    }
+
+  } catch (err) {
+    console.error("login error =", err);
+    showLoginError("เกิดข้อผิดพลาดตอนเข้าสู่ระบบ: " + (err.message || err));
+  } finally {
+    setButtonBusy("login-btn", false);
+  }
+}
+
+function openChangePasswordModal() {
+  document.getElementById("change-current-password").value = "";
+  document.getElementById("change-new-password").value = "";
+  document.getElementById("change-confirm-password").value = "";
+
+  const errEl = document.getElementById("change-password-error");
+  if (errEl) {
+    errEl.style.display = "none";
+    errEl.innerText = "";
+  }
+
+  new bootstrap.Modal(document.getElementById("changePasswordModal")).show();
+}
+
+async function submitChangePassword() {
+  const currentPassword = document.getElementById("change-current-password").value;
+  const newPassword = document.getElementById("change-new-password").value;
+  const confirmPassword = document.getElementById("change-confirm-password").value;
+  const errEl = document.getElementById("change-password-error");
+
+  function showErr(msg) {
+    if (!errEl) return;
+    errEl.innerText = msg;
+    errEl.style.display = "block";
+  }
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    showErr("กรุณากรอกข้อมูลให้ครบ");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showErr("รหัสผ่านใหม่และยืนยันรหัสผ่านไม่ตรงกัน");
+    return;
+  }
+
+  try {
+    setButtonBusy("change-password-btn", true, "⏳ กำลังบันทึก...");
+
+    const res = await apiCall("changePassword", {
+      data: JSON.stringify({
+        token: currentToken,
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+        userAgent: getUserAgentText()
+      })
+    });
+
+    if (!res || res.status !== "success") {
+      showErr((res && res.message) ? res.message : "เปลี่ยนรหัสผ่านไม่สำเร็จ");
+      return;
+    }
+
+    currentUser = res.user;
+    saveSession(currentToken, currentUser);
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById("changePasswordModal"));
+    if (modal) modal.hide();
+
+    alert("เปลี่ยนรหัสผ่านสำเร็จ");
+
+  } catch (err) {
+    console.error("changePassword error =", err);
+    showErr("เกิดข้อผิดพลาด: " + (err.message || err));
+  } finally {
+    setButtonBusy("change-password-btn", false);
+  }
+}
+
+function openForgotPasswordModal() {
+  document.getElementById("forgot-username").value = document.getElementById("login-username").value.trim() || "";
+  document.getElementById("forgot-otp").value = "";
+  document.getElementById("forgot-new-password").value = "";
+  document.getElementById("forgot-confirm-password").value = "";
+
+  const msg = document.getElementById("forgot-message");
+  if (msg) {
+    msg.style.display = "none";
+    msg.innerText = "";
+    msg.className = "fw-bold";
+  }
+
+  new bootstrap.Modal(document.getElementById("forgotPasswordModal")).show();
+}
+
+function showForgotMessage(message, isError) {
+  const msg = document.getElementById("forgot-message");
+  if (!msg) return;
+
+  msg.innerText = message || "";
+  msg.style.display = "block";
+  msg.className = isError ? "fw-bold text-danger" : "fw-bold text-success";
+}
+
+async function sendForgotPasswordOtp() {
+  const username = document.getElementById("forgot-username").value.trim();
+
+  if (!username) {
+    showForgotMessage("กรุณาระบุ username", true);
+    return;
+  }
+
+  try {
+    setButtonBusy("forgot-send-btn", true, "⏳ กำลังส่ง OTP...");
+
+    const res = await apiCall("forgotPassword", {
+      data: JSON.stringify({
+        username: username,
+        userAgent: getUserAgentText()
+      })
+    });
+
+    if (!res || res.status !== "success") {
+      showForgotMessage((res && res.message) ? res.message : "ส่ง OTP ไม่สำเร็จ", true);
+      return;
+    }
+
+    showForgotMessage(res.message || "ส่ง OTP แล้ว กรุณาตรวจสอบอีเมล", false);
+
+  } catch (err) {
+    console.error("forgotPassword error =", err);
+    showForgotMessage("เกิดข้อผิดพลาด: " + (err.message || err), true);
+  } finally {
+    setButtonBusy("forgot-send-btn", false);
+  }
+}
+
+async function resetPasswordWithOtp() {
+  const username = document.getElementById("forgot-username").value.trim();
+  const otp = document.getElementById("forgot-otp").value.trim();
+  const newPassword = document.getElementById("forgot-new-password").value;
+  const confirmPassword = document.getElementById("forgot-confirm-password").value;
+
+  if (!username || !otp || !newPassword || !confirmPassword) {
+    showForgotMessage("กรุณากรอก username, OTP และรหัสผ่านใหม่ให้ครบ", true);
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showForgotMessage("รหัสผ่านใหม่และยืนยันรหัสผ่านไม่ตรงกัน", true);
+    return;
+  }
+
+  try {
+    setButtonBusy("forgot-reset-btn", true, "⏳ กำลังตั้งรหัสใหม่...");
+
+    const res = await apiCall("resetPasswordWithOtp", {
+      data: JSON.stringify({
+        username: username,
+        otp: otp,
+        newPassword: newPassword,
+        userAgent: getUserAgentText()
+      })
+    });
+
+    if (!res || res.status !== "success") {
+      showForgotMessage((res && res.message) ? res.message : "ตั้งรหัสใหม่ไม่สำเร็จ", true);
+      return;
+    }
+
+    showForgotMessage(res.message || "ตั้งรหัสผ่านใหม่สำเร็จ", false);
+
+    setTimeout(() => {
+      const modal = bootstrap.Modal.getInstance(document.getElementById("forgotPasswordModal"));
+      if (modal) modal.hide();
+
+      document.getElementById("login-username").value = username;
+      document.getElementById("login-password").value = "";
+    }, 1200);
+
+  } catch (err) {
+    console.error("resetPasswordWithOtp error =", err);
+    showForgotMessage("เกิดข้อผิดพลาด: " + (err.message || err), true);
+  } finally {
+    setButtonBusy("forgot-reset-btn", false);
+  }
 }
     
     function getLocalDateInputValue() {
@@ -1519,18 +2071,30 @@ function logout() {
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-      document.getElementById("table-date").value = getLocalDateInputValue();
+  document.getElementById("table-date").value = getLocalDateInputValue();
 
-      document.getElementById("dn-search").addEventListener("keydown", function(e) {
-        if (e.key === "Enter") loadTable();
-      });
+  document.getElementById("dn-search").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") loadTable();
+  });
 
-      document.getElementById("table-date").addEventListener("keydown", function(e) {
-        if (e.key === "Enter") loadTable();
-      });
+  document.getElementById("table-date").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") loadTable();
+  });
 
-      loadTable();
-    });
+  document.getElementById("login-username")?.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      document.getElementById("login-password").focus();
+    }
+  });
+
+  document.getElementById("login-password")?.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      login();
+    }
+  });
+
+  initAuth();
+});
 
     function toggleReason() {
       const status = document.getElementById("sc-status").value;
