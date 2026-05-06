@@ -1527,9 +1527,13 @@
 
       return (
         msg.includes("Session หมดอายุ") ||
-        msg.includes("กรุณาเข้าสู่ระบบ") ||
-        msg.includes("กรุณาเปลี่ยนรหัสผ่าน")
+        msg.includes("กรุณาเข้าสู่ระบบ")
       );
+    }
+
+    function isNeedChangePasswordMessage(message) {
+      const msg = (message || "").toString();
+      return msg.includes("กรุณาเปลี่ยนรหัสผ่าน");
     }
     
     function apiCall(action, params = {}) {
@@ -1592,9 +1596,17 @@
         window[callbackName] = function(response) {
           cleanup();
 
+          if (response && response.status === "error" && isNeedChangePasswordMessage(response.message)) {
+            openChangePasswordModal();
+            resolve(response);
+            return;
+          }
+
           if (response && response.status === "error" && isAuthErrorMessage(response.message)) {
             clearSession();
             showLoginScreen();
+            resolve(response);
+            return;
           }
 
           resolve(response);
@@ -1902,10 +1914,11 @@ async function initAuth() {
     currentUser = res.user;
     saveSession(currentToken, currentUser);
     showAppScreen();
-    showPage("dashboard");
 
     if (currentUser.mustChangePassword) {
       openChangePasswordModal();
+    } else {
+      showPage("dashboard");
     }
 
   } catch (err) {
@@ -1944,12 +1957,15 @@ async function login() {
 
     saveSession(res.token, res.user);
     showAppScreen();
-    showPage("dashboard");
 
     document.getElementById("login-password").value = "";
 
-    if (res.mustChangePassword || res.user?.mustChangePassword) {
+    const mustChange = res.mustChangePassword || res.user?.mustChangePassword;
+
+    if (mustChange) {
       openChangePasswordModal();
+    } else {
+      showPage("dashboard");
     }
 
   } catch (err) {
