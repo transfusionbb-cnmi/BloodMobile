@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>CNMI Blood Donation</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+  <style>
+    :root {
+      --cnmi-blue: #2f80ed;
+      --cnmi-blue-soft: #eaf4ff;
+      --cnmi-blue-border: #b8dafc;
+      --cnmi-blue-dark: #185abc;
+      --cnmi-text: #18324a;
+      --cnmi-muted: #6b7a8a;
+      --cnmi-card: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top left, #dff1ff 0, transparent 34%),
+        linear-gradient(135deg, #f7fbff 0%, #eaf4ff 100%);
+      padding: 16px;
+      font-family: 'Sarabun', sans-serif;
+      color: var(--cnmi-text);
+    }
+
+    .app-topbar {
+      max-width: 1320px;
+      margin: 0 auto 14px auto;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--cnmi-blue-border);
+      border-radius: 18px;
+      padding: 14px 18px;
+      box-shadow: 0 10px 24px rgba(47, 128, 237, 0.10);
+    }
+
+    .app-title {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--cnmi-blue-dark);
+    }
+
+    .app-subtitle {
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      color: var(--cnmi-muted);
+    }
+
+    .container {
+      max-width: 1320px;
+    }
+
+    .main-card {
+      background: var(--cnmi-card);
+      padding: 22px;
+      border-radius: 18px;
+      border: 1px solid rgba(184, 218, 252, 0.85);
+      box-shadow: 0 10px 24px rgba(47, 128, 237, 0.10);
+      margin-bottom: 18px;
+    }
+
+    .header-title {
+      color: var(--cnmi-blue-dark);
+      font-weight: 700;
+      border-bottom: 2px solid var(--cnmi-blue);
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn-primary {
+      background-color: var(--cnmi-blue) !important;
+      border-color: var(--cnmi-blue) !important;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--cnmi-blue-dark) !important;
+      border-color: var(--cnmi-blue-dark) !important;
+    }
+
+    .btn-danger {
+      background-color: #2f80ed !important;
+      border-color: #2f80ed !important;
+    }
+
+    .btn-danger:hover {
+      background-color: #185abc !important;
+      border-color: #185abc !important;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    #visit-table-body tr {
+      cursor: pointer;
+      transition: background-color 0.18s ease;
+    }
+
+    #visit-table-body tr:hover td {
+      background-color: #eef6ff !important;
+    }
+
+    #visit-table-body td {
+      vertical-align: middle;
+    }
+
+    .btn-group {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .btn-group .btn {
+      border-radius: 8px !important;
+      margin: 0 !important;
+    }
+
+    .action-btn {
+      transition: all 0.18s ease;
+      border-width: 1px !important;
+      font-weight: 600;
+    }
+
+    .action-btn-edit {
+      background: #ffffff !important;
+      color: #19a7ce !important;
+      border-color: #19a7ce !important;
+    }
+
+    .action-btn-edit:hover {
+      background: #19a7ce !important;
+      color: #ffffff !important;
+      border-color: #19a7ce !important;
+    }
+
+    .action-btn-print {
+      background: #ffffff !important;
+      color: #ef4b56 !important;
+      border-color: #ef4b56 !important;
+    }
+
+    .action-btn-print:hover {
+      background: #ef4b56 !important;
+      color: #ffffff !important;
+      border-color: #ef4b56 !important;
+    }
+
+    .action-btn-cert {
+      background: #ffffff !important;
+      color: #6f42c1 !important;
+      border-color: #6f42c1 !important;
+    }
+
+    .action-btn-cert:hover {
+      background: #6f42c1 !important;
+      color: #ffffff !important;
+      border-color: #6f42c1 !important;
+    }
+
+    .action-btn-screen {
+      background: #ffffff !important;
+      color: #b58500 !important;
+      border-color: #f2c94c !important;
+    }
+
+    .action-btn-screen:hover {
+      background: #f2c94c !important;
+      color: #ffffff !important;
+      border-color: #f2c94c !important;
+    }
+
+    .action-btn-sticker {
+      background: #ffffff !important;
+      color: #1f78ff !important;
+      border-color: #1f78ff !important;
+    }
+
+    .action-btn-sticker:hover {
+      background: #1f78ff !important;
+      color: #ffffff !important;
+      border-color: #1f78ff !important;
+    }
+
+    .detail-label {
+      font-weight: 700;
+      color: #555;
+    }
+
+    .detail-value {
+      color: #111;
+    }
+
+    .detail-box {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 12px 14px;
+      border: 1px solid #e9ecef;
+    }
+
+    .reason-fail {
+      color: #dc3545;
+      font-weight: 700;
+    }
+
+    .reason-pending {
+      color: #c79100;
+      font-weight: 700;
+    }
+
+    .reason-pass {
+      color: #198754;
+      font-weight: 700;
+    }
+
+    #a4-template,
+    #tsc-template,
+    #cert-template {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .app-topbar {
+        padding: 12px 14px;
+        border-radius: 14px;
+      }
+
+      .app-title {
+        font-size: 19px;
+      }
+
+      .main-card {
+        padding: 14px;
+        border-radius: 14px;
+      }
+
+      .header-title {
+        font-size: 1.35rem;
+      }
+
+      .d-flex.gap-2 {
+        flex-wrap: wrap;
+      }
+
+      .btn.btn-lg {
+        width: 100%;
+      }
+
+      .col-auto.ms-auto {
+        width: 100%;
+        flex-wrap: wrap;
+        margin-left: 0 !important;
+      }
+
+      #dn-search,
+      #table-date {
+        width: 100% !important;
+      }
+
+      .table {
+        min-width: 820px;
+      }
+    }
+
+    @media print {
+      .app-topbar,
+      .container,
+      .main-card,
+      button,
+      .modal {
+        display: none !important;
+      }
+
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        font-family: 'Sarabun', sans-serif !important;
+      }
+
+      #a4-template.active-print {
+        display: block !important;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 210mm;
+        height: 297mm;
+        background: white;
+        z-index: 9999;
+      }
+
+      .print-data {
+        position: absolute;
+        color: black;
+        font-size: 14pt;
+      }
+
+      #p-dn { top: 38mm; left: 140mm; font-weight: bold; font-size: 16pt; }
+      #p-barcode { top: 48mm; left: 140mm; width: 42mm; height: 14mm; }
+      #p-name { top: 38mm; left: 10mm; }
+      #p-id { top: 48mm; left: 10mm; }
+      #p-birth { top: 58mm; left: 10mm; }
+      #p-age { top: 58mm; left: 72mm; }
+      #p-gender { top: 58mm; left: 95mm; }
+      #p-address { top: 68mm; left: 10mm; width: 190mm; }
+
+      #cert-template.active-print {
+        display: block !important;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 210mm;
+        min-height: 297mm;
+        background: white;
+        z-index: 9999;
+      }
+
+      .cert-page {
+        width: 210mm;
+        min-height: 297mm;
+        box-sizing: border-box;
+        padding: 14mm 16mm 18mm 16mm;
+        font-family: 'Sarabun', sans-serif;
+        color: #222;
+        line-height: 1.8;
+        font-size: 16px;
+      }
+
+      .cert-header {
+        text-align: center;
+        margin-bottom: 10mm;
+      }
+
+      .cert-header-top {
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .cert-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin-top: 8mm;
+      }
+
+      .cert-row {
+        margin-bottom: 6mm;
+      }
+
+      .cert-line {
+        display: inline-block;
+        border-bottom: 1px dotted #333;
+        min-width: 120px;
+        padding: 0 4px;
+      }
+
+      .cert-line.long {
+        min-width: 420px;
+      }
+
+      .cert-line.mid {
+        min-width: 220px;
+      }
+
+      .cert-sign-area {
+        margin-top: 20mm;
+        width: 100%;
+        text-align: center;
+      }
+
+      .cert-sign-line {
+        display: inline-block;
+        border-bottom: 1px dotted #333;
+        min-width: 240px;
+        height: 28px;
+      }
+
+      .cert-muted {
+        color: #444;
+      }
+
+      #tsc-template.active-print {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 50mm;
+        background: #fff;
+      }
+
+      .label-box {
+        width: 50mm;
+        height: 30mm;
+        padding: 2mm 2mm 0.5mm 2mm;
+        box-sizing: border-box;
+        overflow: hidden;
+        page-break-after: always;
+        position: relative;
+        background: #fff;
+        font-family: 'Sarabun', sans-serif;
+      }
+
+      .st-name {
+        font-size: 2.8mm;
+        font-weight: 500;
+        line-height: 1.02;
+        white-space: nowrap;
+        overflow: visible;
+        text-overflow: clip;
+        margin: 0 0 1.02mm 0;
+      }
+
+      .st-line {
+        font-size: 2.8mm;
+        line-height: 1;
+        margin: 0 0 0.5mm 0;
+        white-space: nowrap;
+        overflow: visible;
+        text-overflow: clip;
+      }
+
+      .st-bar-wrap {
+        margin: 0 0 0.8mm 0.3mm;
+        line-height: 0;
+        text-align: left;
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      .st-row-between {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 1.2mm;
+        width: 100%;
+        font-size: 3.5mm;
+        line-height: 1;
+        margin: 0;
+      }
+
+      .st-code {
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 40mm;
+      }
+
+      .st-type {
+        font-size: 3.4mm;
+        font-style: italic;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .st-blood {
+        font-size: 3.5mm;
+        font-weight: 700;
+        line-height: 1;
+        margin-top: 0.3mm;
+        white-space: nowrap;
+      }
+
+      .st-component-wrap {
+        position: relative;
+        margin-top: 0.6mm;
+        min-height: 7mm;
+      }
+
+      .st-component-tag {
+        position: absolute;
+        right: 0;
+        bottom: 0.1mm;
+        font-size: 3.8mm;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .bc-main-sticker {
+        width: 31mm;
+        height: 8.4mm;
+        display: block;
+      }
+
+      .bc-component-sticker {
+        width: 37mm;
+        height: 9.2mm;
+        display: block;
+        margin: 0 !important;
+      }
+
+      .bc-main-sticker text,
+      .bc-component-sticker text {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-topbar">
+    <h1 class="app-title">CNMI Blood Donation</h1>
+    <p class="app-subtitle">ระบบลงทะเบียน คัดกรอง พิมพ์ใบสมัคร สติ๊กเกอร์ และหนังสือรับรองการบริจาคโลหิต</p>
+  </div>
+
+  <div class="container">
+    <div class="main-card">
+      <h2 class="header-title">🩸 ลงทะเบียนผู้บริจาคโลหิต</h2>
+
+      <div class="row g-3">
+        <div class="col-md-12">
+          <label class="fw-bold">เลขบัตรประชาชน</label>
+          <input type="text" id="id_card" class="form-control form-control-lg" autofocus>
+        </div>
+
+        <div class="col-md-2">
+          <label>คำนำหน้า</label>
+          <input type="text" id="prefix" class="form-control">
+        </div>
+
+        <div class="col-md-5">
+          <label>ชื่อ</label>
+          <input type="text" id="fname" class="form-control">
+        </div>
+
+        <div class="col-md-5">
+          <label>นามสกุล</label>
+          <input type="text" id="lname" class="form-control">
+        </div>
+
+        <div class="col-md-6">
+          <label>วันเกิด (วว-ดด-ปปปป พ.ศ.)</label>
+          <input type="text" id="birth_date" class="form-control" placeholder="เช่น 31-12-2530">
+        </div>
+
+        <div class="col-md-6">
+          <label>เพศ</label>
+          <input type="text" id="gender" class="form-control">
+        </div>
+
+        <div class="col-md-12">
+          <label>ที่อยู่</label>
+          <textarea id="address" class="form-control" rows="2"></textarea>
+        </div>
+
+        <div class="col-md-12 mt-3">
+          <div class="d-flex gap-2">
+            <button id="save-btn" class="btn btn-danger btn-lg flex-grow-1" onclick="saveData()">✅ บันทึกและพิมพ์ใบสมัคร A4</button>
+            <button class="btn btn-outline-secondary btn-lg" onclick="clearForm()">🧹 ล้างข้อมูล</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-card">
+      <div class="row g-2 align-items-center mb-3">
+        <div class="col-auto">
+          <h4 class="text-primary fw-bold m-0">📋 รายชื่อผู้บริจาค</h4>
+        </div>
+
+        <div class="col-auto ms-auto d-flex gap-2 align-items-center">
+          <input type="text" id="dn-search" class="form-control form-control-sm" placeholder="ค้นหา DN" style="width: 170px;">
+          <input type="date" id="table-date" class="form-control form-control-sm" style="width: 170px;">
+          <button id="search-btn" class="btn btn-primary btn-sm" onclick="loadTable()">🔍 ค้นหา</button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="width:70px;">ลำดับ</th>
+              <th>DN</th>
+              <th>ชื่อ-นามสกุล</th>
+              <th>สถานะ</th>
+              <th>เลขถุง</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="visit-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="screeningModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title">🩺 คัดกรอง: <span id="modal-name"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="modal-dn">
+          <input type="hidden" id="modal-row-json">
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label>ประเภท</label>
+              <select id="sc-type" class="form-select" required>
+                <option value="" selected>-- กรุณาเลือก Type ผู้บริจาค --</option>
+                <option value="New">รายใหม่ (New)</option>
+                <option value="Recent">ประจำ (Recent)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label>หมู่เลือด</label>
+              <select id="sc-group" class="form-select">
+                <option value="-">-</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="O">O</option>
+                <option value="AB">AB</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label>น้ำหนัก</label>
+              <input type="number" id="sc-weight" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+              <label>ความดัน</label>
+              <input type="text" id="sc-bp" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+              <label>ชีพจร</label>
+              <input type="number" id="sc-pulse" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+              <label>อุณหภูมิ</label>
+              <input type="number" step="0.1" id="sc-temp" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+              <label>ความเข้มเลือด</label>
+              <input type="number" step="0.1" id="sc-hb" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+              <label>ผลคัดกรอง</label>
+              <select id="sc-status" class="form-select" onchange="toggleReason()" required>
+                <option value="" selected>-- กรุณาเลือกผลคัดกรอง --</option>
+                <option value="ผ่าน">✅ ผ่าน</option>
+                <option value="ไม่ผ่าน">❌ ไม่ผ่าน</option>
+              </select>
+            </div>
+
+            <div class="col-md-6" id="reason-box" style="display:none;">
+              <label class="text-danger">เหตุผลที่ไม่ผ่าน</label>
+              <input type="text" id="sc-reason" class="form-control border-danger">
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="text-center">
+            <button id="screening-save-btn" class="btn btn-primary btn-lg w-50" onclick="submitScreening()">💾 บันทึก</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="visitDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title">📋 รายละเอียดผู้บริจาค / ผลคัดกรองเบื้องต้น</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="detail-box mb-3">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="detail-label">DN</div>
+                <div id="vd-dn" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-label">เลขถุง</div>
+                <div id="vd-bag" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-label">สถานะ</div>
+                <div id="vd-status" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="detail-label">ชื่อ-นามสกุล</div>
+                <div id="vd-name" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-label">วันเกิด</div>
+                <div id="vd-birth" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-label">เพศ</div>
+                <div id="vd-gender" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-label">หมู่เลือด</div>
+                <div id="vd-group" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-label">ประเภท</div>
+                <div id="vd-type" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-label">น้ำหนัก</div>
+                <div id="vd-weight" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-label">Hb</div>
+                <div id="vd-hb" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-label">BP</div>
+                <div id="vd-bp" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-label">Pulse</div>
+                <div id="vd-pulse" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-label">Temp</div>
+                <div id="vd-temp" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="detail-label">เวลาบันทึกผลคัดกรอง</div>
+                <div id="vd-save-time" class="detail-value"></div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="detail-label">สรุปเหตุผล</div>
+                <div id="vd-reason" class="detail-value"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="a4-template">
+    <div id="p-dn" class="print-data"></div>
+    <svg id="p-barcode" class="print-data"></svg>
+    <div id="p-name" class="print-data"></div>
+    <div id="p-id" class="print-data"></div>
+    <div id="p-birth" class="print-data"></div>
+    <div id="p-age" class="print-data"></div>
+    <div id="p-gender" class="print-data"></div>
+    <div id="p-address" class="print-data"></div>
+  </div>
+
+  <div id="cert-template">
+    <div class="cert-page">
+      <div class="cert-header">
+        <div class="cert-header-top">
+          ธนาคารเลือด (หน่วยเวชศาสตร์บริการโลหิต) โรงพยาบาลรามาธิบดีจักรีนฤบดินทร์<br>
+          คณะแพทยศาสตร์โรงพยาบาลรามาธิบดี มหาวิทยาลัยมหิดล<br>
+          ห้องรับบริจาคโลหิต โทร : 02-839-6116
+        </div>
+        <div class="cert-title">หนังสือรับรองการบริจาคโลหิต</div>
+      </div>
+
+      <div class="cert-row">
+        เลขที่ <span id="c-cert-no" class="cert-line mid">-</span>
+      </div>
+
+      <div class="cert-row">
+        หนังสือรับรองฉบับนี้ให้ไว้เพื่อรับรองว่า
+        <span id="c-name" class="cert-line long">-</span>
+      </div>
+
+      <div class="cert-row">
+        เลขบัตรประชาชน
+        <span id="c-id" class="cert-line mid">-</span>
+        ที่อยู่
+        <span id="c-address" class="cert-line long">-</span>
+      </div>
+
+      <div class="cert-row">
+        ได้มาบริจาคโลหิต ณ หน่วยรับบริจาคโลหิตเคลื่อนที่ โรงพยาบาลรามาธิบดีจักรีนฤบดินทร์
+        คณะแพทยศาสตร์โรงพยาบาลรามาธิบดี มหาวิทยาลัยมหิดล
+        เมื่อวันที่ <span id="c-visit-date" class="cert-line mid">-</span>
+      </div>
+
+      <div class="cert-row">
+        ออกให้เมื่อวันที่ <span id="c-issue-date" class="cert-line mid">-</span>
+      </div>
+
+      <div class="cert-sign-area">
+        <div>ลงชื่อ <span class="cert-sign-line"></span></div>
+        <div style="margin-top:10mm;">(<span id="c-signer-name">.......................................................</span>)</div>
+        <div style="margin-top:6mm;">ตำแหน่ง <span id="c-signer-position">.......................................................</span></div>
+        <div style="margin-top:8mm;" class="cert-muted">
+          หน่วยรับบริจาคโลหิตเคลื่อนที่ โรงพยาบาลรามาธิบดีจักรีนฤบดินทร์
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tsc-template"></div>
+
+  <script>
+    console.log("CNMI Blood Donation GitHub Version 2026-05-06");
+
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxmAMXoX2QEs3T-xb0Gyo-bBX2o-XUJ8n9YVb_rjiGDHee3xHs1sAiZf5CbZHkZI9BbQ/exec";
+    const API_TIMEOUT_MS = 30000;
+
+    function apiCall(action, params = {}) {
+      return new Promise((resolve, reject) => {
+        if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("วาง_URL")) {
+          reject(new Error("ยังไม่ได้ตั้งค่า GAS_WEB_APP_URL ในไฟล์ index.html"));
+          return;
+        }
+
+        let url;
+
+        try {
+          url = new URL(GAS_WEB_APP_URL);
+        } catch (err) {
+          reject(new Error("GAS_WEB_APP_URL ไม่ถูกต้อง"));
+          return;
+        }
+
+        const callbackName = "cnmi_cb_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+
+        url.searchParams.set("action", action);
+        url.searchParams.set("callback", callbackName);
+
+        Object.keys(params || {}).forEach(key => {
+          url.searchParams.set(key, params[key]);
+        });
+
+        const script = document.createElement("script");
+
+        let timer = setTimeout(() => {
+          cleanup();
+          reject(new Error("เชื่อมต่อ Apps Script ไม่สำเร็จหรือหมดเวลา"));
+        }, API_TIMEOUT_MS);
+
+        function cleanup() {
+          clearTimeout(timer);
+          delete window[callbackName];
+
+          if (script && script.parentNode) {
+            script.parentNode.removeChild(script);
+          }
+        }
+
+        window[callbackName] = function(response) {
+          cleanup();
+          resolve(response);
+        };
+
+        script.onerror = function() {
+          cleanup();
+          reject(new Error("เรียก Apps Script ไม่สำเร็จ กรุณาตรวจสอบ Web App URL และสิทธิ์การ Deploy"));
+        };
+
+        script.src = url.toString();
+        document.body.appendChild(script);
+      });
+    }
+
+    function setButtonBusy(buttonId, isBusy, busyText) {
+      const btn = document.getElementById(buttonId);
+      if (!btn) return;
+
+      if (isBusy) {
+        btn.dataset.oldText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = busyText || "กำลังทำงาน...";
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = btn.dataset.oldText || btn.innerHTML;
+      }
+    }
+
+    function getLocalDateInputValue() {
+      const now = new Date();
+      const offset = now.getTimezoneOffset() * 60000;
+      return new Date(now.getTime() - offset).toISOString().split("T")[0];
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("table-date").value = getLocalDateInputValue();
+
+      document.getElementById("dn-search").addEventListener("keydown", function(e) {
+        if (e.key === "Enter") loadTable();
+      });
+
+      document.getElementById("table-date").addEventListener("keydown", function(e) {
+        if (e.key === "Enter") loadTable();
+      });
+
+      loadTable();
+    });
+
+    function toggleReason() {
+      const status = document.getElementById("sc-status").value;
+      const reasonBox = document.getElementById("reason-box");
+      const reasonInput = document.getElementById("sc-reason");
+
+      if (status === "ไม่ผ่าน") {
+        reasonBox.style.display = "block";
+      } else {
+        reasonBox.style.display = "none";
+        reasonInput.value = "";
+      }
+    }
+
+    async function saveData() {
+      const data = {
+        idCard: document.getElementById("id_card").value.trim(),
+        prefix: document.getElementById("prefix").value.trim(),
+        fname: document.getElementById("fname").value.trim(),
+        lname: document.getElementById("lname").value.trim(),
+        birthDate: document.getElementById("birth_date").value.trim(),
+        gender: document.getElementById("gender").value.trim(),
+        address: document.getElementById("address").value.trim()
+      };
+
+      if (!data.idCard || !data.prefix || !data.fname || !data.lname || !data.birthDate || !data.gender) {
+        alert("กรุณากรอกข้อมูลสำคัญให้ครบ: เลขบัตรประชาชน, คำนำหน้า, ชื่อ, นามสกุล, วันเกิด, เพศ");
+        return;
+      }
+
+      if (!/^\d{13}$/.test(data.idCard)) {
+        alert("เลขบัตรประชาชนต้องเป็นตัวเลข 13 หลัก");
+        document.getElementById("id_card").focus();
+        return;
+      }
+
+      try {
+        setButtonBusy("save-btn", true, "⏳ กำลังบันทึก...");
+
+        const res = await apiCall("saveDataToSheet", {
+          data: JSON.stringify(data)
+        });
+
+        if (!res || res.status !== "success") {
+          alert((res && res.message) ? res.message : "บันทึกไม่สำเร็จ");
+          return;
+        }
+
+        alert("บันทึกสำเร็จ!");
+
+        const rowStr = encodeURIComponent(JSON.stringify(res));
+        printA4FromRow(rowStr);
+
+        clearForm();
+        loadTable();
+
+      } catch (err) {
+        console.error("saveData error =", err);
+        alert("เกิดข้อผิดพลาดตอนบันทึกข้อมูล: " + (err.message || err));
+      } finally {
+        setButtonBusy("save-btn", false);
+      }
+    }
+
+    async function loadTable() {
+      const dateInput = document.getElementById("table-date").value;
+      const dnQuery = (document.getElementById("dn-search")?.value || "").trim().toLowerCase();
+      const tbody = document.getElementById("visit-table-body");
+
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center">⌛ กำลังโหลด...</td></tr>';
+
+      try {
+        setButtonBusy("search-btn", true, "⏳ โหลด...");
+
+        const data = await apiCall("getRecentVisits", {
+          targetDate: dateInput
+        });
+
+        if (data && data.status === "error") {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">' + escapeHtml(data.message || "เกิดข้อผิดพลาด") + "</td></tr>";
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center">ไม่พบข้อมูลของวันที่ ' + escapeHtml(dateInput) + "</td></tr>";
+          return;
+        }
+
+        let filteredData = data;
+
+        if (dnQuery !== "") {
+          filteredData = data.filter(row =>
+            ((row.dn || "").toString().toLowerCase().includes(dnQuery))
+          );
+        }
+
+        if (filteredData.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center">ไม่พบ DN ที่ค้นหา</td></tr>';
+          return;
+        }
+
+        let html = "";
+
+        filteredData.forEach((row, index) => {
+          let badgeClass = "bg-warning text-dark";
+          let statusText = "รอคัดกรอง";
+
+          if (row.status === "ผ่าน") {
+            badgeClass = "bg-success";
+            statusText = "ผ่าน";
+          } else if (row.status === "ไม่ผ่าน") {
+            badgeClass = "bg-danger";
+            statusText = "ไม่ผ่าน";
+          }
+
+          let rowStr = encodeURIComponent(JSON.stringify(row));
+          let isPending = (row.status === "รอคัดกรอง" || !row.status);
+          let hasBag = (row.bag && row.bag !== "" && row.bag !== "-");
+          let disableScreen = (hasBag || !isPending) ? "disabled" : "";
+
+          html += `
+            <tr onclick="openVisitDetail('${rowStr}')">
+              <td>${filteredData.length - index}</td>
+              <td>${escapeHtml(row.dn)}</td>
+              <td>
+                <strong>${escapeHtml(row.name)}</strong><br>
+                <small class="text-muted">วัน/เดือน/ปีเกิด: ${escapeHtml(row.birth)}</small>
+              </td>
+              <td><span class="badge ${badgeClass}" style="width:80px">${statusText}</span></td>
+              <td><strong class="text-primary">${escapeHtml(row.bag || "-")}</strong></td>
+              <td>
+                <div class="btn-group">
+                  <button class="btn btn-sm action-btn action-btn-edit"
+                    onclick="event.stopPropagation(); prepareEdit('${rowStr}')">✏️ แก้ไขข้อมูล</button>
+
+                  <button class="btn btn-sm action-btn action-btn-print"
+                    onclick="event.stopPropagation(); printA4FromRow('${rowStr}')">📄 พิมพ์ใบ A4</button>
+
+                  <button class="btn btn-sm action-btn action-btn-cert"
+                    onclick="event.stopPropagation(); printCertificateFromRow('${rowStr}')">📜 พิมพ์ใบรับรอง</button>
+
+                  <button class="btn btn-sm action-btn action-btn-screen"
+                    onclick="event.stopPropagation(); openScreening('${rowStr}')" ${disableScreen}>🩺 ลงผลคัดกรอง</button>
+
+                  <button class="btn btn-sm action-btn action-btn-sticker"
+                    onclick="event.stopPropagation(); reprintTSCFromRow('${rowStr}')">🏷️ พิมพ์สติ๊กเกอร์</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+
+        tbody.innerHTML = html;
+
+      } catch (err) {
+        console.error("loadTable error =", err);
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">เกิดข้อผิดพลาด: ' + escapeHtml(err.message || err) + "</td></tr>";
+      } finally {
+        setButtonBusy("search-btn", false);
+      }
+    }
+
+    function prepareEdit(rowStr) {
+      let row = JSON.parse(decodeURIComponent(rowStr));
+
+      document.getElementById("id_card").value = row.idCard || "";
+      document.getElementById("prefix").value = row.prefix || "";
+      document.getElementById("fname").value = row.fname || "";
+      document.getElementById("lname").value = row.lname || "";
+      document.getElementById("birth_date").value = row.birth || "";
+      document.getElementById("gender").value = row.gender || "";
+      document.getElementById("address").value = row.address || "";
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function clearForm() {
+      const fields = ["id_card", "prefix", "fname", "lname", "birth_date", "gender", "address"];
+
+      fields.forEach(id => {
+        document.getElementById(id).value = "";
+      });
+
+      document.getElementById("id_card").focus();
+    }
+
+    function resetScreeningForm() {
+      document.getElementById("sc-type").value = "";
+      document.getElementById("sc-group").value = "-";
+      document.getElementById("sc-weight").value = "";
+      document.getElementById("sc-bp").value = "";
+      document.getElementById("sc-pulse").value = "";
+      document.getElementById("sc-temp").value = "";
+      document.getElementById("sc-hb").value = "";
+      document.getElementById("sc-status").value = "";
+      document.getElementById("sc-reason").value = "";
+      document.getElementById("reason-box").style.display = "none";
+    }
+
+    function openScreening(encodedRow) {
+      let row = JSON.parse(decodeURIComponent(encodedRow));
+
+      resetScreeningForm();
+
+      document.getElementById("modal-dn").value = row.dn || "";
+      document.getElementById("modal-name").innerText = row.name || "";
+      document.getElementById("modal-row-json").value = encodedRow || "";
+
+      new bootstrap.Modal(document.getElementById("screeningModal")).show();
+    }
+
+    async function submitScreening() {
+      let dn = document.getElementById("modal-dn").value;
+      let encodedBaseRow = document.getElementById("modal-row-json").value || encodeURIComponent(JSON.stringify({}));
+      let baseRow = JSON.parse(decodeURIComponent(encodedBaseRow));
+
+      let sData = {
+        type: document.getElementById("sc-type").value,
+        group: document.getElementById("sc-group").value,
+        weight: document.getElementById("sc-weight").value,
+        bp: document.getElementById("sc-bp").value,
+        pulse: document.getElementById("sc-pulse").value,
+        temp: document.getElementById("sc-temp").value,
+        hb: document.getElementById("sc-hb").value,
+        status: document.getElementById("sc-status").value,
+        reason: document.getElementById("sc-reason").value
+      };
+
+      if (!sData.status) {
+        alert("กรุณาเลือกผลคัดกรอง");
+        document.getElementById("sc-status").focus();
+        return;
+      }
+
+      if (sData.status === "ผ่าน") {
+        if (!sData.type) {
+          alert("กรุณาเลือกประเภทผู้บริจาค");
+          document.getElementById("sc-type").focus();
+          return;
+        }
+
+        if (!sData.group || sData.group === "-") {
+          alert("กรุณาเลือกหมู่เลือด");
+          document.getElementById("sc-group").focus();
+          return;
+        }
+
+        if (!sData.weight || !sData.bp || !sData.pulse || !sData.temp || !sData.hb) {
+          alert("กรุณากรอกข้อมูลคัดกรองให้ครบก่อนบันทึก");
+          return;
+        }
+      }
+
+      if (sData.status === "ไม่ผ่าน" && !sData.reason) {
+        alert("กรุณาระบุเหตุผลที่ไม่ผ่าน");
+        document.getElementById("sc-reason").focus();
+        return;
+      }
+
+      try {
+        setButtonBusy("screening-save-btn", true, "⏳ กำลังบันทึก...");
+
+        const res = await apiCall("saveScreeningResult", {
+          dn: dn,
+          data: JSON.stringify(sData)
+        });
+
+        if (!res || res.status === "error") {
+          alert((res && res.message) ? res.message : "บันทึกผลคัดกรองไม่สำเร็จ");
+          return;
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById("screeningModal")).hide();
+        resetScreeningForm();
+
+        let printRow = {
+          ...baseRow,
+          bag: res.bagNumber || "",
+          type: sData.type || "",
+          group: sData.group || "",
+          saveTime: res.saveTime || "",
+          c1: res.c1 || "",
+          c2: res.c2 || "",
+          e1: res.e1 || "",
+          e2: res.e2 || "",
+          status: sData.status || ""
+        };
+
+        if (sData.status === "ผ่าน") {
+          printTSCFromRow(encodeURIComponent(JSON.stringify(printRow)));
+        }
+
+        loadTable();
+
+      } catch (err) {
+        console.error("submitScreening error =", err);
+        alert("เกิดข้อผิดพลาดตอนบันทึกผลคัดกรอง: " + (err.message || err));
+      } finally {
+        setButtonBusy("screening-save-btn", false);
+      }
+    }
+
+    function openVisitDetail(encodedRow) {
+      let row = JSON.parse(decodeURIComponent(encodedRow));
+
+      document.getElementById("vd-dn").innerText = row.dn || "-";
+      document.getElementById("vd-bag").innerText = row.bag || "-";
+      document.getElementById("vd-status").innerText = row.status || "รอคัดกรอง";
+      document.getElementById("vd-name").innerText = row.name || "-";
+      document.getElementById("vd-birth").innerText = row.birth || "-";
+      document.getElementById("vd-gender").innerText = row.gender || "-";
+      document.getElementById("vd-group").innerText = row.group || "-";
+      document.getElementById("vd-type").innerText = row.type || "-";
+      document.getElementById("vd-weight").innerText = row.weight || "-";
+      document.getElementById("vd-hb").innerText = row.hb || "-";
+      document.getElementById("vd-bp").innerText = row.bp || "-";
+      document.getElementById("vd-pulse").innerText = row.pulse || "-";
+      document.getElementById("vd-temp").innerText = row.temp || "-";
+      document.getElementById("vd-save-time").innerText = row.saveTime || "-";
+
+      let reasonEl = document.getElementById("vd-reason");
+      let status = (row.status || "").trim();
+
+      if (status === "ไม่ผ่าน") {
+        reasonEl.className = "detail-value reason-fail";
+        reasonEl.innerText = row.reason || "ไม่ระบุเหตุผล";
+      } else if (status === "รอคัดกรอง") {
+        reasonEl.className = "detail-value reason-pending";
+        reasonEl.innerText = "ยังไม่ได้ลงผลคัดกรอง";
+      } else {
+        reasonEl.className = "detail-value reason-pass";
+        reasonEl.innerText = "ผ่านคัดกรอง";
+      }
+
+      new bootstrap.Modal(document.getElementById("visitDetailModal")).show();
+    }
+
+    function setPrintPageSize(sizeText) {
+      let styleEl = document.getElementById("dynamic-print-page-size");
+
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = "dynamic-print-page-size";
+        document.head.appendChild(styleEl);
+      }
+
+      styleEl.textContent = `
+        @media print {
+          @page {
+            size: ${sizeText};
+            margin: 0;
+          }
+        }
+      `;
+    }
+
+    function clearPrintPageSize() {
+      const styleEl = document.getElementById("dynamic-print-page-size");
+      if (styleEl) {
+        styleEl.remove();
+      }
+    }
+
+    function printA4FromRow(encodedRow) {
+      try {
+        let row = JSON.parse(decodeURIComponent(encodedRow));
+
+        let pDn = document.getElementById("p-dn");
+        let pBarcode = document.getElementById("p-barcode");
+        let pName = document.getElementById("p-name");
+        let pId = document.getElementById("p-id");
+        let pBirth = document.getElementById("p-birth");
+        let pAge = document.getElementById("p-age");
+        let pGender = document.getElementById("p-gender");
+        let pAddress = document.getElementById("p-address");
+        let a4 = document.getElementById("a4-template");
+        let tsc = document.getElementById("tsc-template");
+        let cert = document.getElementById("cert-template");
+
+        if (!pDn || !pBarcode || !pName || !pId || !pBirth || !pAge || !pGender || !pAddress || !a4) {
+          alert("ไม่พบ element สำหรับพิมพ์ A4 บางตัว");
+          return;
+        }
+
+        let age = "-";
+
+        if (row.birth && row.birth.includes("-")) {
+          let parts = row.birth.split("-");
+          let yearBE = parseInt(parts[2], 10);
+
+          if (!isNaN(yearBE)) {
+            age = (new Date().getFullYear() + 543) - yearBE;
+          }
+        }
+
+        pDn.innerText = "DN: " + (row.dn || "");
+        pName.innerText = "ชื่อ-สกุล: " + (row.name || "");
+        pId.innerText = "เลขบัตรประชาชน: " + (row.idCard || "");
+        pBirth.innerText = "วัน-เดือน-ปีเกิด: " + (row.birth || "-");
+        pAge.innerText = "อายุ: " + age + " ปี";
+        pGender.innerText = "เพศ: " + (row.gender || "-");
+        pAddress.innerText = "ที่อยู่: " + (row.address || "-");
+
+        a4.className = "active-print";
+
+        if (tsc) {
+          tsc.className = "";
+          tsc.style.display = "";
+          tsc.style.visibility = "";
+        }
+
+        if (cert) {
+          cert.className = "";
+          cert.style.display = "";
+          cert.style.visibility = "";
+        }
+
+        if (row.dn) {
+          JsBarcode("#p-barcode", row.dn, {
+            format: "CODE128",
+            width: 1.6,
+            height: 42,
+            displayValue: false,
+            margin: 0
+          });
+        }
+
+        setPrintPageSize("210mm 297mm");
+
+        setTimeout(() => {
+          window.print();
+        }, 500);
+
+      } catch (err) {
+        console.error("PRINT ERROR:", err);
+        alert("พิมพ์ไม่สำเร็จ: " + err.message);
+      }
+    }
+
+    async function printCertificateFromRow(encodedRow) {
+      try {
+        let row = JSON.parse(decodeURIComponent(encodedRow));
+
+        let cert = document.getElementById("cert-template");
+        let a4 = document.getElementById("a4-template");
+        let tsc = document.getElementById("tsc-template");
+
+        let cCertNo = document.getElementById("c-cert-no");
+        let cName = document.getElementById("c-name");
+        let cId = document.getElementById("c-id");
+        let cAddress = document.getElementById("c-address");
+        let cVisitDate = document.getElementById("c-visit-date");
+        let cIssueDate = document.getElementById("c-issue-date");
+
+        if (!cert || !cCertNo || !cName || !cId || !cAddress || !cVisitDate || !cIssueDate) {
+          alert("ไม่พบ element สำหรับพิมพ์ใบรับรอง");
+          return;
+        }
+
+        const selectedDate = document.getElementById("table-date")?.value || getLocalDateInputValue();
+
+        const res = await apiCall("issueCertificateNumber", {
+          data: JSON.stringify({
+            dn: row.dn || "",
+            name: row.name || "",
+            idCard: row.idCard || "",
+            address: row.address || "",
+            visitDate: selectedDate,
+            remark: ""
+          })
+        });
+
+        if (!res || res.status !== "ok") {
+          alert((res && res.message) ? res.message : "สร้างเลขใบรับรองไม่สำเร็จ");
+          return;
+        }
+
+        cCertNo.innerText = res.certNo || "-";
+        cName.innerText = row.name || "-";
+        cId.innerText = row.idCard || "-";
+        cAddress.innerText = row.address || "-";
+        cVisitDate.innerText = formatThaiDateForCert(selectedDate);
+        cIssueDate.innerText = formatThaiDateForCert(res.issueDate || getLocalDateInputValue());
+
+        cert.className = "active-print";
+
+        if (a4) {
+          a4.className = "";
+          a4.style.display = "";
+          a4.style.visibility = "";
+        }
+
+        if (tsc) {
+          tsc.className = "";
+          tsc.style.display = "";
+          tsc.style.visibility = "";
+        }
+
+        setPrintPageSize("210mm 297mm");
+
+        setTimeout(() => {
+          window.print();
+        }, 300);
+
+      } catch (err) {
+        console.error("CERT PRINT ERROR:", err);
+        alert("พิมพ์ใบรับรองไม่สำเร็จ: " + err.message);
+      }
+    }
+
+    function sexToShort(gender) {
+      let g = (gender || "").toString().trim().toLowerCase();
+
+      if (g === "ชาย" || g === "male" || g === "m") return "M";
+      if (g === "หญิง" || g === "female" || g === "f") return "F";
+
+      return "-";
+    }
+
+    function escapeHtml(text) {
+      return (text || "").toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function printTSCFromRow(encodedRow) {
+      let row = JSON.parse(decodeURIComponent(encodedRow));
+
+      if (!row.bag || row.bag === "-") {
+        return alert("ยังไม่มีเลขถุง");
+      }
+
+      let tsc = document.getElementById("tsc-template");
+      let a4 = document.getElementById("a4-template");
+      let cert = document.getElementById("cert-template");
+
+      let fullName = escapeHtml(row.name || "");
+      let saveTimeShort = escapeHtml((row.saveTime || "").replace(/:\d{2}$/, ""));
+      let bag = escapeHtml(row.bag || "");
+      let donorType = escapeHtml(row.type || "");
+      let donorTypeText = donorType ? `(${donorType})` : "";
+      let group = escapeHtml(row.group || "-");
+      let sexShort = escapeHtml(sexToShort(row.gender || ""));
+      let c1 = escapeHtml(row.c1 || "");
+      let c2 = escapeHtml(row.c2 || "");
+      let e1 = escapeHtml(row.e1 || "");
+      let e2 = escapeHtml(row.e2 || "");
+
+      let componentList = [
+        { code: c1, tag: "C1" },
+        { code: c2, tag: "C2" },
+        { code: e1, tag: "E1" },
+        { code: e2, tag: "E2" },
+        { code: c2, tag: "C2" },
+        { code: e2, tag: "E2" }
+      ];
+
+      let html = "";
+
+      for (let i = 0; i < 5; i++) {
+        html += `
+          <div class="label-box">
+            <div class="st-name">${fullName}</div>
+            <div class="st-line">วันที่เจาะ: ${saveTimeShort}</div>
+
+            <div class="st-bar-wrap">
+              <svg class="bc-main-sticker" data-value="${bag}"></svg>
+            </div>
+
+            <div class="st-row-between">
+              <span class="st-code">${bag}</span>
+              <span class="st-type">${donorTypeText}</span>
+            </div>
+
+            <div class="st-blood">${group} (${sexShort})</div>
+          </div>
+        `;
+      }
+
+      componentList.forEach(item => {
+        html += `
+          <div class="label-box">
+            <div class="st-bar-wrap">
+              <svg class="bc-main-sticker" data-value="${bag}"></svg>
+            </div>
+
+            <div class="st-row-between">
+              <span class="st-code">${bag} ${group} (${sexShort})</span>
+              <span class="st-type">${donorTypeText}</span>
+            </div>
+
+            <div class="st-component-wrap">
+              <svg class="bc-component-sticker" data-value="${item.code}"></svg>
+              <span class="st-component-tag">${item.tag}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      tsc.innerHTML = html;
+      tsc.className = "active-print";
+      tsc.style.display = "";
+      tsc.style.visibility = "";
+
+      if (a4) {
+        a4.className = "";
+        a4.style.display = "";
+        a4.style.visibility = "";
+      }
+
+      if (cert) {
+        cert.className = "";
+        cert.style.display = "";
+        cert.style.visibility = "";
+      }
+
+      setPrintPageSize("50mm 30mm");
+
+      setTimeout(() => {
+        document.querySelectorAll(".bc-main-sticker").forEach(el => {
+          JsBarcode(el, el.dataset.value || "", {
+            format: "CODE128",
+            width: 0.80,
+            height: 30,
+            displayValue: false,
+            margin: 0,
+            textMargin: 0,
+            fontSize: 0
+          });
+        });
+
+        document.querySelectorAll(".bc-component-sticker").forEach(el => {
+          JsBarcode(el, el.dataset.value || "", {
+            format: "CODE128",
+            width: 0.80,
+            height: 30,
+            displayValue: false,
+            margin: 0,
+            textMargin: 0,
+            fontSize: 0
+          });
+        });
+
+        window.print();
+      }, 300);
+    }
+
+    function reprintTSCFromRow(encodedRow) {
+      printTSCFromRow(encodedRow);
+    }
+
+    function resetPrintTemplates() {
+      const a4 = document.getElementById("a4-template");
+      const tsc = document.getElementById("tsc-template");
+      const cert = document.getElementById("cert-template");
+
+      if (a4) {
+        a4.className = "";
+        a4.style.display = "";
+        a4.style.visibility = "";
+      }
+
+      if (tsc) {
+        tsc.className = "";
+        tsc.style.display = "";
+        tsc.style.visibility = "";
+      }
+
+      if (cert) {
+        cert.className = "";
+        cert.style.display = "";
+        cert.style.visibility = "";
+      }
+    }
+
+    function formatThaiDateForCert(dateValue) {
+      if (!dateValue) return "-";
+
+      if (typeof dateValue === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(dateValue)) {
+        return dateValue;
+      }
+
+      let d;
+
+      if (dateValue instanceof Date) {
+        d = dateValue;
+      } else {
+        d = new Date(dateValue);
+      }
+
+      if (isNaN(d.getTime())) return "-";
+
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear() + 543;
+
+      return `${day}/${month}/${year}`;
+    }
+
+    window.addEventListener("afterprint", clearPrintPageSize);
+    window.addEventListener("afterprint", resetPrintTemplates);
+  </script>
+</body>
+</html>
