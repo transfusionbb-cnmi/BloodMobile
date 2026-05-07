@@ -887,6 +887,26 @@
   font-size: 12px;
   letter-spacing: 0.2px;
 }
+
+    .nav-sub-btn {
+  padding-left: 38px !important;
+  font-size: 14px;
+  opacity: 0.96;
+}
+
+.audit-row {
+  cursor: pointer;
+}
+
+.audit-row:hover td {
+  background-color: #eef6ff !important;
+}
+
+.audit-detail-cell {
+  min-width: 260px;
+  max-width: 420px;
+  white-space: normal;
+}
     
   </style>
 </head>
@@ -976,6 +996,10 @@
         <button class="nav-btn" data-page="settings" data-roles="admin,sup_manager" onclick="showPage('settings')">
           <span class="nav-icon">⚙️</span>
           <span>Users / Settings</span>
+        </button>
+        <button class="nav-btn nav-sub-btn" data-page="audit-logs" data-roles="admin,sup_manager" onclick="showPage('audit-logs')">
+          <span>🧾</span>
+          <span>AuditLog Viewer</span>
         </button>
       </nav>
 
@@ -1199,70 +1223,77 @@
       </table>
     </div>
   </div>
+  
+
+        <section class="page-section" id="page-audit-logs">
+  <div class="page-title-card">
+    <h1 class="page-title">AuditLog Viewer</h1>
+    <p class="page-desc">ดูประวัติการใช้งานระบบย้อนหลัง</p>
+  </div>
+
   <div class="main-card">
-  <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
-    <div>
-      <h4 class="text-primary fw-bold m-0">🧾 AuditLog Viewer</h4>
-      <div class="text-muted small">ดูประวัติการใช้งานระบบย้อนหลัง</div>
+    <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+      <div>
+        <h4 class="text-primary fw-bold m-0">🧾 AuditLog Viewer</h4>
+        <div class="text-muted small">คลิกที่แถวเพื่อดูรายละเอียดเต็ม</div>
+      </div>
+
+      <button id="audit-refresh-btn" class="btn btn-primary btn-sm" onclick="loadAuditLogs()">🔄 โหลด AuditLog</button>
     </div>
 
-    <button id="audit-refresh-btn" class="btn btn-primary btn-sm" onclick="loadAuditLogs()">🔄 โหลด AuditLog</button>
+    <div class="row g-2 mb-3">
+      <div class="col-md-3">
+        <label class="small fw-bold">วันที่</label>
+        <input type="date" id="audit-date" class="form-control form-control-sm">
+      </div>
+
+      <div class="col-md-3">
+        <label class="small fw-bold">Username</label>
+        <input type="text" id="audit-username" class="form-control form-control-sm" placeholder="เช่น 020305">
+      </div>
+
+      <div class="col-md-3">
+        <label class="small fw-bold">Action</label>
+        <input type="text" id="audit-action" class="form-control form-control-sm" placeholder="เช่น LOGIN, PRINT, SCREENING">
+      </div>
+
+      <div class="col-md-3">
+        <label class="small fw-bold">จำนวนรายการ</label>
+        <select id="audit-limit" class="form-select form-select-sm">
+          <option value="50">50 รายการล่าสุด</option>
+          <option value="100" selected>100 รายการล่าสุด</option>
+          <option value="200">200 รายการล่าสุด</option>
+          <option value="300">300 รายการล่าสุด</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mb-3 flex-wrap">
+      <button class="btn btn-outline-primary btn-sm" onclick="loadAuditLogs()">🔍 ค้นหา</button>
+      <button class="btn btn-outline-secondary btn-sm" onclick="clearAuditFilters()">ล้างตัวกรอง</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>เวลา</th>
+            <th>Username</th>
+            <th>ชื่อ</th>
+            <th>Role</th>
+            <th>Action</th>
+            <th>Target</th>
+            <th>รายละเอียด</th>
+          </tr>
+        </thead>
+        <tbody id="audit-log-table-body">
+          <tr>
+            <td colspan="7" class="text-center text-muted">กดโหลด AuditLog</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-
-  <div class="row g-2 mb-3">
-    <div class="col-md-3">
-      <label class="small fw-bold">วันที่</label>
-      <input type="date" id="audit-date" class="form-control form-control-sm">
-    </div>
-
-    <div class="col-md-3">
-      <label class="small fw-bold">Username</label>
-      <input type="text" id="audit-username" class="form-control form-control-sm" placeholder="เช่น 020305">
-    </div>
-
-    <div class="col-md-3">
-      <label class="small fw-bold">Action</label>
-      <input type="text" id="audit-action" class="form-control form-control-sm" placeholder="เช่น LOGIN, PRINT, SCREENING">
-    </div>
-
-    <div class="col-md-3">
-      <label class="small fw-bold">จำนวนรายการ</label>
-      <select id="audit-limit" class="form-select form-select-sm">
-        <option value="50">50 รายการล่าสุด</option>
-        <option value="100" selected>100 รายการล่าสุด</option>
-        <option value="200">200 รายการล่าสุด</option>
-        <option value="300">300 รายการล่าสุด</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="d-flex gap-2 mb-3 flex-wrap">
-    <button class="btn btn-outline-primary btn-sm" onclick="loadAuditLogs()">🔍 ค้นหา</button>
-    <button class="btn btn-outline-secondary btn-sm" onclick="clearAuditFilters()">ล้างตัวกรอง</button>
-  </div>
-
-  <div class="table-responsive">
-    <table class="table table-hover align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>เวลา</th>
-          <th>Username</th>
-          <th>ชื่อ</th>
-          <th>Role</th>
-          <th>Action</th>
-          <th>Target</th>
-          <th>รายละเอียด</th>
-          <th>User Agent</th>
-        </tr>
-      </thead>
-      <tbody id="audit-log-table-body">
-        <tr>
-          <td colspan="8" class="text-center text-muted">กดโหลด AuditLog</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
 </section>
 
       
@@ -1298,6 +1329,66 @@
   </div>
 </div>
 
+
+    <div class="modal fade" id="auditDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content" style="border-radius: 18px; overflow: hidden;">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">🧾 รายละเอียด AuditLog</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="detail-label">เวลา</div>
+            <div id="audit-detail-time" class="detail-value"></div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="detail-label">Username</div>
+            <div id="audit-detail-username" class="detail-value"></div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="detail-label">Role</div>
+            <div id="audit-detail-role" class="detail-value"></div>
+          </div>
+
+          <div class="col-md-12">
+            <div class="detail-label">ชื่อผู้ใช้งาน</div>
+            <div id="audit-detail-fullname" class="detail-value"></div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="detail-label">Action</div>
+            <div id="audit-detail-action" class="detail-value"></div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="detail-label">Target Type</div>
+            <div id="audit-detail-target-type" class="detail-value"></div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="detail-label">Target ID</div>
+            <div id="audit-detail-target-id" class="detail-value"></div>
+          </div>
+
+          <div class="col-md-12">
+            <div class="detail-label">รายละเอียด</div>
+            <div id="audit-detail-detail" class="detail-box"></div>
+          </div>
+
+          <div class="col-md-12">
+            <div class="detail-label">User Agent</div>
+            <div id="audit-detail-useragent" class="detail-box small text-muted" style="word-break: break-word;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
     
     <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -1853,6 +1944,9 @@ function showPage(pageName) {
 
   if (pageName === "settings") {
     loadUsersSettings();
+  }
+
+  if (pageName === "audit-logs") {
     loadAuditLogs();
   }
 
@@ -2549,6 +2643,22 @@ async function resetPasswordWithOtp() {
   return "bg-secondary";
 }
 
+function openAuditDetail(encodedLog) {
+  const log = JSON.parse(decodeURIComponent(encodedLog));
+
+  document.getElementById("audit-detail-time").innerText = log.timestamp || "-";
+  document.getElementById("audit-detail-username").innerText = log.username || "-";
+  document.getElementById("audit-detail-role").innerText = log.role || "-";
+  document.getElementById("audit-detail-fullname").innerText = log.fullName || "-";
+  document.getElementById("audit-detail-action").innerText = log.action || "-";
+  document.getElementById("audit-detail-target-type").innerText = log.targetType || "-";
+  document.getElementById("audit-detail-target-id").innerText = log.targetId || "-";
+  document.getElementById("audit-detail-detail").innerText = log.detail || "-";
+  document.getElementById("audit-detail-useragent").innerText = log.userAgent || "-";
+
+  new bootstrap.Modal(document.getElementById("auditDetailModal")).show();
+}
+
 async function loadAuditLogs() {
   const tbody = document.getElementById("audit-log-table-body");
   if (!tbody) return;
@@ -2558,7 +2668,7 @@ async function loadAuditLogs() {
   const action = document.getElementById("audit-action")?.value || "";
   const limit = document.getElementById("audit-limit")?.value || "100";
 
-  tbody.innerHTML = '<tr><td colspan="8" class="text-center">⌛ กำลังโหลด AuditLog...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" class="text-center">⌛ กำลังโหลด AuditLog...</td></tr>';
 
   try {
     setButtonBusy("audit-refresh-btn", true, "⏳ โหลด...");
@@ -2575,7 +2685,7 @@ async function loadAuditLogs() {
     if (!res || res.status !== "success") {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" class="text-center text-danger">
+          <td colspan="7" class="text-center text-danger">
             ${escapeHtml((res && res.message) ? res.message : "โหลด AuditLog ไม่สำเร็จ")}
           </td>
         </tr>
@@ -2586,7 +2696,7 @@ async function loadAuditLogs() {
     const logs = res.logs || [];
 
     if (logs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">ไม่พบ AuditLog ตามเงื่อนไข</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">ไม่พบ AuditLog ตามเงื่อนไข</td></tr>';
       return;
     }
 
@@ -2594,9 +2704,10 @@ async function loadAuditLogs() {
 
     logs.forEach(log => {
       const actionBadgeClass = getAuditActionBadgeClass(log.action);
+      const logStr = encodeURIComponent(JSON.stringify(log));
 
       html += `
-        <tr>
+        <tr class="audit-row" onclick="openAuditDetail('${logStr}')">
           <td class="text-nowrap">${escapeHtml(log.timestamp || "-")}</td>
           <td><strong>${escapeHtml(log.username || "-")}</strong></td>
           <td>${escapeHtml(log.fullName || "-")}</td>
@@ -2611,9 +2722,6 @@ async function loadAuditLogs() {
             <div class="small text-muted">${escapeHtml(log.targetId || "-")}</div>
           </td>
           <td class="audit-detail-cell">${escapeHtml(log.detail || "-")}</td>
-          <td class="audit-useragent-cell" title="${escapeHtml(log.userAgent || "")}">
-            ${escapeHtml(log.userAgent || "-")}
-          </td>
         </tr>
       `;
     });
@@ -2625,7 +2733,7 @@ async function loadAuditLogs() {
 
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" class="text-center text-danger">
+        <td colspan="7" class="text-center text-danger">
           เกิดข้อผิดพลาด: ${escapeHtml(err.message || err)}
         </td>
       </tr>
