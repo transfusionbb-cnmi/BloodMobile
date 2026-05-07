@@ -920,42 +920,42 @@
       </div>
 
       <nav class="sidebar-nav">
-        <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard')">
+        <button class="nav-btn active" data-page="dashboard" data-roles="admin,sup_manager,manager,staff,physician" onclick="showPage('dashboard')">
           <span class="nav-icon">📊</span>
           <span>Dashboard</span>
         </button>
 
-        <button class="nav-btn" data-page="register" onclick="showPage('register')">
+        <button class="nav-btn" data-page="register" data-roles="admin,sup_manager,manager,staff" onclick="showPage('register')">
           <span class="nav-icon">📝</span>
           <span>ลงทะเบียนผู้บริจาค</span>
         </button>
 
-        <button class="nav-btn" data-page="print-a4" onclick="showPage('print-a4')">
+        <button class="nav-btn" data-page="print-a4" data-roles="admin,sup_manager,manager,staff" onclick="showPage('print-a4')">
           <span class="nav-icon">📄</span>
           <span>พิมพ์ใบสมัคร</span>
         </button>
 
-        <button class="nav-btn" data-page="today" onclick="showPage('today')">
+        <button class="nav-btn" data-page="today" data-roles="admin,sup_manager,manager,staff,physician" onclick="showPage('today')">
           <span class="nav-icon">📋</span>
           <span>รายชื่อผู้บริจาควันนี้</span>
         </button>
 
-        <button class="nav-btn" data-page="screening" onclick="showPage('screening')">
+        <button class="nav-btn" data-page="screening" data-roles="admin,sup_manager,manager,staff" onclick="showPage('screening')">
           <span class="nav-icon">🩺</span>
           <span>คัดกรองผู้บริจาค</span>
         </button>
 
-        <button class="nav-btn" data-page="sticker" onclick="showPage('sticker')">
+        <button class="nav-btn" data-page="sticker" data-roles="admin,sup_manager,manager,staff" onclick="showPage('sticker')">
           <span class="nav-icon">🏷️</span>
           <span>พิมพ์สติ๊กเกอร์</span>
         </button>
 
-        <button class="nav-btn" data-page="certificate" onclick="showPage('certificate')">
+        <button class="nav-btn" data-page="certificate" data-roles="admin,sup_manager,manager,staff,physician" onclick="showPage('certificate')">
           <span class="nav-icon">📜</span>
           <span>หนังสือรับรอง</span>
         </button>
 
-        <button class="nav-btn" data-page="settings" onclick="showPage('settings')">
+        <button class="nav-btn" data-page="settings" data-roles="admin,sup_manager" onclick="showPage('settings')">
           <span class="nav-icon">⚙️</span>
           <span>Users / Settings</span>
         </button>
@@ -1735,6 +1735,10 @@ function updateVisitTableTitle(mode) {
 }
 
 function showPage(pageName) {
+  if (!canAccessPage(pageName)) {
+    showSuccessPopup("ไม่มีสิทธิ์เข้าถึง", "บัญชีของคุณไม่มีสิทธิ์ใช้งานเมนูนี้");
+    pageName = getFirstAllowedPage();
+  }
   document.querySelectorAll(".page-section").forEach(section => {
     section.classList.remove("active");
   });
@@ -1876,6 +1880,46 @@ async function logout() {
   showLoginScreen();
 }
 
+    function getCurrentRole() {
+  return currentUser?.role || "";
+}
+
+function canAccessPage(pageName) {
+  const btn = document.querySelector('.nav-btn[data-page="' + pageName + '"]');
+
+  if (!btn) return true;
+
+  const rolesText = btn.getAttribute("data-roles") || "";
+  const allowedRoles = rolesText.split(",").map(r => r.trim()).filter(Boolean);
+  const role = getCurrentRole();
+
+  if (allowedRoles.length === 0) return true;
+
+  return allowedRoles.includes(role);
+}
+
+function applyRoleBasedMenu() {
+  const role = getCurrentRole();
+
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    const rolesText = btn.getAttribute("data-roles") || "";
+    const allowedRoles = rolesText.split(",").map(r => r.trim()).filter(Boolean);
+
+    if (allowedRoles.length === 0 || allowedRoles.includes(role)) {
+      btn.style.display = "";
+    } else {
+      btn.style.display = "none";
+    }
+  });
+}
+
+function getFirstAllowedPage() {
+  const visibleBtn = Array.from(document.querySelectorAll(".nav-btn"))
+    .find(btn => btn.style.display !== "none");
+
+  return visibleBtn?.getAttribute("data-page") || "dashboard";
+}
+    
     function showConfirmPopup(title, message, okText = "ยืนยัน") {
   return new Promise(resolve => {
     const titleEl = document.getElementById("confirm-title");
@@ -1985,6 +2029,7 @@ function updateSidebarUser() {
   if (roleEl) {
     roleEl.innerText = currentUser?.role || "-";
   }
+  applyRoleBasedMenu();
 }
 
 async function initAuth() {
@@ -2023,7 +2068,7 @@ async function initAuth() {
     if (currentUser.mustChangePassword) {
       openChangePasswordModal();
     } else {
-      showPage("dashboard");
+      showPage(getFirstAllowedPage());
     }
 
   } catch (err) {
@@ -2070,7 +2115,7 @@ async function login() {
     if (mustChange) {
       openChangePasswordModal();
     } else {
-      showPage("dashboard");
+      showPage(getFirstAllowedPage());
     }
 
   } catch (err) {
