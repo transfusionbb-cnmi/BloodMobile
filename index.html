@@ -907,6 +907,54 @@
   max-width: 420px;
   white-space: normal;
 }
+
+  /* ===== Multi-level Sidebar ===== */
+.nav-group {
+  width: 100%;
+}
+
+.nav-group-title {
+  position: relative;
+}
+
+.nav-chevron {
+  margin-left: auto;
+  font-size: 13px;
+  opacity: 0.8;
+  transition: transform 0.2s ease;
+}
+
+.nav-submenu {
+  display: none;
+  margin: 4px 0 8px 0;
+  padding-left: 18px;
+}
+
+.nav-group:hover .nav-submenu,
+.nav-group.is-open .nav-submenu {
+  display: block;
+}
+
+.nav-group:hover .nav-chevron,
+.nav-group.is-open .nav-chevron {
+  transform: rotate(180deg);
+}
+
+.nav-sub-btn {
+  font-size: 14px;
+  padding-left: 18px !important;
+  margin-top: 4px;
+  opacity: 0.96;
+}
+
+.nav-sub-btn span:first-child {
+  width: 22px;
+  display: inline-block;
+}
+
+.nav-group.has-active .nav-group-title {
+  background: rgba(255, 255, 255, 0.16);
+}
     
   </style>
 </head>
@@ -993,14 +1041,25 @@
           <span>หนังสือรับรอง</span>
         </button>
 
-        <button class="nav-btn" data-page="settings" data-roles="admin,sup_manager" onclick="showPage('settings')">
-          <span class="nav-icon">⚙️</span>
-          <span>Users / Settings</span>
-        </button>
-        <button class="nav-btn nav-sub-btn" data-page="audit-logs" data-roles="admin,sup_manager" onclick="showPage('audit-logs')">
-          <span>🧾</span>
-          <span>AuditLog Viewer</span>
-        </button>
+        <div class="nav-group" data-group-roles="admin,sup_manager">
+          <button class="nav-btn nav-group-title" type="button">
+            <span>⚙️</span>
+            <span>Users / Settings</span>
+            <span class="nav-chevron">▾</span>
+          </button>
+
+          <div class="nav-submenu">
+            <button class="nav-btn nav-sub-btn" data-page="settings" data-roles="admin,sup_manager" onclick="showPage('settings')">
+              <span>👥</span>
+              <span>Settings / Users</span>
+            </button>
+
+            <button class="nav-btn nav-sub-btn" data-page="audit-logs" data-roles="admin,sup_manager" onclick="showPage('audit-logs')">
+              <span>🧾</span>
+              <span>AuditLog Viewer</span>
+            </button>
+  </div>
+</div>
       </nav>
 
       <div class="sidebar-footer">
@@ -1923,12 +1982,25 @@ function showPage(pageName) {
   }
 
   document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.classList.remove("active");
-  });
+  btn.classList.remove("active");
+});
 
-  const activeBtn = document.querySelector('.nav-btn[data-page="' + pageName + '"]');
-  if (activeBtn) {
-    activeBtn.classList.add("active");
+document.querySelectorAll(".nav-group").forEach(group => {
+  group.classList.remove("has-active");
+  group.classList.remove("is-open");
+});
+
+const activeBtn = document.querySelector('.nav-btn[data-page="' + pageName + '"]');
+
+if (activeBtn) {
+  activeBtn.classList.add("active");
+
+  const parentGroup = activeBtn.closest(".nav-group");
+  if (parentGroup) {
+    parentGroup.classList.add("has-active");
+    parentGroup.classList.add("is-open");
+  }
+}
   }
 
   closeSidebar();
@@ -2109,7 +2181,7 @@ function canAccessPage(pageName) {
 function applyRoleBasedMenu() {
   const role = getCurrentRole();
 
-  document.querySelectorAll(".nav-btn").forEach(btn => {
+  document.querySelectorAll(".nav-btn[data-roles]").forEach(btn => {
     const rolesText = btn.getAttribute("data-roles") || "";
     const allowedRoles = rolesText.split(",").map(r => r.trim()).filter(Boolean);
 
@@ -2118,6 +2190,17 @@ function applyRoleBasedMenu() {
     } else {
       btn.style.display = "none";
     }
+  });
+
+  document.querySelectorAll(".nav-group").forEach(group => {
+    const groupRolesText = group.getAttribute("data-group-roles") || "";
+    const groupRoles = groupRolesText.split(",").map(r => r.trim()).filter(Boolean);
+
+    const hasGroupPermission = groupRoles.length === 0 || groupRoles.includes(role);
+    const hasVisibleChild = Array.from(group.querySelectorAll(".nav-btn[data-page]"))
+      .some(btn => btn.style.display !== "none");
+
+    group.style.display = (hasGroupPermission && hasVisibleChild) ? "" : "none";
   });
 }
 
