@@ -1799,6 +1799,26 @@ function filterByCurrentTableMode(data) {
   return data;
 }
 
+async function logPrintAction(printType, row, extra = {}) {
+  const res = await apiCall("logPrintAction", {
+    data: JSON.stringify({
+      printType: printType,
+      dn: row?.dn || "",
+      bag: row?.bag || "",
+      certNo: extra.certNo || "",
+      name: row?.name || "",
+      userAgent: getUserAgentText()
+    })
+  });
+
+  if (!res || res.status !== "success") {
+    const message = (res && res.message) ? res.message : "บันทึกประวัติการพิมพ์ไม่สำเร็จ";
+    throw new Error(message);
+  }
+
+  return res;
+}
+    
 function buildActionButtons(row, rowStr, disableScreen) {
   const editBtn = `
     <button class="btn btn-sm action-btn action-btn-edit"
@@ -2904,9 +2924,11 @@ if (!ok) return;
       }
     }
 
-    function printA4FromRow(encodedRow) {
+    async function printA4FromRow(encodedRow) {
       try {
         let row = JSON.parse(decodeURIComponent(encodedRow));
+        
+        await logPrintAction("PRINT_A4", row);
 
         let pDn = document.getElementById("p-dn");
         let pBarcode = document.getElementById("p-barcode");
@@ -3025,6 +3047,15 @@ if (!ok) return;
         cVisitDate.innerText = formatThaiDateForCert(selectedDate);
         cIssueDate.innerText = formatThaiDateForCert(res.issueDate || getLocalDateInputValue());
 
+        try {
+          await logPrintAction("PRINT_CERTIFICATE", row, {
+            certNo: res.certNo || ""
+          });
+        } catch (err) {
+          alert("ไม่สามารถพิมพ์หนังสือรับรองได้: " + (err.message || err));
+          return;
+        }
+
         cert.className = "active-print";
 
         if (a4) {
@@ -3069,11 +3100,18 @@ if (!ok) return;
         .replace(/'/g, "&#039;");
     }
 
-    function printTSCFromRow(encodedRow) {
+    async function printTSCFromRow(encodedRow) {
       let row = JSON.parse(decodeURIComponent(encodedRow));
 
       if (!row.bag || row.bag === "-") {
         return alert("ยังไม่มีเลขถุง");
+      }
+
+      try {
+        await logPrintAction("PRINT_STICKER", row);
+      } catch (err) {
+        alert("ไม่สามารถพิมพ์สติ๊กเกอร์ได้: " + (err.message || err));
+        return;
       }
 
       let tsc = document.getElementById("tsc-template");
@@ -3191,8 +3229,8 @@ if (!ok) return;
       }, 300);
     }
 
-    function reprintTSCFromRow(encodedRow) {
-      printTSCFromRow(encodedRow);
+    async function reprintTSCFromRow(encodedRow) {
+      await printTSCFromRow(encodedRow);
     }
 
     function resetPrintTemplates() {
