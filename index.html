@@ -1395,16 +1395,16 @@
       </section>
 
       <section class="page-section" id="page-today">
-        <div class="page-title-card">
-          <h1 class="page-title">รายชื่อผู้บริจาควันนี้</h1>
-          <p class="page-desc">ค้นหา DN ดูสถานะ และเลือกพิมพ์เอกสารต่าง ๆ</p>
-        </div>
+  <div class="page-title-card">
+    <h1 class="page-title">รายชื่อผู้บริจาควันนี้</h1>
+    <p class="page-desc">ค้นหา DN ดูสถานะ และเลือกเมนูที่เกี่ยวข้อง</p>
+  </div>
 
-        <div class="container-fluid px-0" id="table-mount-today">
-          <div class="main-card" id="visit-table-card">
-            <div class="row g-2 align-items-center mb-3">
-              <div class="col-auto">
-                <h4 class="text-primary fw-bold m-0" id="visit-table-title">📋 รายชื่อผู้บริจาควันนี้</h4>
+  <div class="container-fluid px-0" id="table-mount-today">
+    <div class="main-card" id="visit-table-card">
+      <div class="row g-2 align-items-center mb-3">
+        <div class="col-auto">
+          <h4 class="text-primary fw-bold m-0" id="visit-table-title">📋 รายชื่อผู้บริจาควันนี้</h4>
         </div>
 
         <div class="col-auto ms-auto d-flex gap-2 align-items-center">
@@ -1429,9 +1429,9 @@
           <tbody id="visit-table-body"></tbody>
         </table>
       </div>
-              </div>
-        </div>
-      </section>
+    </div>
+  </div>
+</section>
 
       <section class="page-section" id="page-print-a4">
         <div class="page-title-card">
@@ -2168,18 +2168,34 @@
     let currentTableMode = "today";
 
 function isTablePage(pageName) {
-  return ["today", "print-a4", "screening", "sticker", "certificate"].includes(pageName);
+  return [
+    "today",
+    "print-a4",
+    "screening",
+    "sticker",
+    "certificate"
+  ].includes(pageName);
 }
 
 function moveVisitTableTo(pageName) {
-  const card = ("visit-table-card");
-  const mount = ("table-mount-" + pageName);
+  const tableCard = document.getElementById("visit-table-card");
+  if (!tableCard) return;
 
-  if (card && mount && !mount.contains(card)) {
-    mount.appendChild(card);
+  const hostMap = {
+    today: "table-mount-today",
+    "print-a4": "table-mount-print-a4",
+    screening: "table-mount-screening",
+    sticker: "table-mount-sticker",
+    certificate: "table-mount-certificate"
+  };
+
+  const hostId = hostMap[pageName];
+  const host = document.getElementById(hostId);
+
+  if (host) {
+    host.appendChild(tableCard);
   }
 
-  currentTableMode = pageName;
   updateVisitTableTitle(pageName);
 }
 
@@ -2237,10 +2253,10 @@ function showPage(pageName) {
   closeSidebar();
 
   if (isTablePage(pageName)) {
-    currentTablePage = pageName;
-    moveVisitTableTo(pageName);
-    loadTable(pageName);
-  }
+  currentTableMode = pageName;
+  moveVisitTableTo(pageName);
+  loadTable();
+}
 
   if (pageName === "dashboard") {
     loadTable();
