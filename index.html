@@ -1379,9 +1379,14 @@
           <input type="text" id="gender" class="form-control">
         </div>
 
-        <div class="col-md-12">
+        <div class="col-md-8">
           <label>ที่อยู่</label>
           <textarea id="address" class="form-control" rows="2"></textarea>
+        </div>
+
+        <div class="col-md-4">
+          <label>เบอร์โทร</label>
+          <input type="text" id="phone" class="form-control" placeholder="เช่น 0812345678">
         </div>
 
         <div class="col-md-12 mt-3">
@@ -2914,7 +2919,8 @@ async function resetPasswordWithOtp() {
         lname: document.getElementById("lname").value.trim(),
         birthDate: document.getElementById("birth_date").value.trim(),
         gender: document.getElementById("gender").value.trim(),
-        address: document.getElementById("address").value.trim()
+        address: document.getElementById("address").value.trim(),
+        phone: document.getElementById('phone').value
       };
 
       if (!data.idCard || !data.prefix || !data.fname || !data.lname || !data.birthDate || !data.gender) {
@@ -3391,12 +3397,13 @@ if (!ok) return;
       document.getElementById("birth_date").value = row.birth || "";
       document.getElementById("gender").value = row.gender || "";
       document.getElementById("address").value = row.address || "";
+      document.getElementById('phone').value = row.phone || "";
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function clearForm() {
-      const fields = ["id_card", "prefix", "fname", "lname", "birth_date", "gender", "address"];
+      const fields = ["id_card", "prefix", "fname", "lname", "birth_date", "gender", "address", "phone"];
 
       fields.forEach(id => {
         document.getElementById(id).value = "";
@@ -3530,6 +3537,7 @@ if (!ok) return;
       document.getElementById("vd-name").innerText = row.name || "-";
       document.getElementById("vd-birth").innerText = row.birth || "-";
       document.getElementById("vd-gender").innerText = row.gender || "-";
+      document.getElementById('vd-phone').innerText = row.phone || '-';
       document.getElementById("vd-group").innerText = row.group || "-";
       document.getElementById("vd-type").innerText = row.type || "-";
       document.getElementById("vd-weight").innerText = row.weight || "-";
