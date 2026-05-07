@@ -869,6 +869,24 @@
 .auth-hidden {
   display: none !important;
 }
+
+.audit-detail-cell {
+  min-width: 280px;
+  max-width: 420px;
+  white-space: normal;
+}
+
+.audit-useragent-cell {
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.audit-action-badge {
+  font-size: 12px;
+  letter-spacing: 0.2px;
+}
     
   </style>
 </head>
@@ -1181,7 +1199,72 @@
       </table>
     </div>
   </div>
+  <div class="main-card">
+  <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+    <div>
+      <h4 class="text-primary fw-bold m-0">🧾 AuditLog Viewer</h4>
+      <div class="text-muted small">ดูประวัติการใช้งานระบบย้อนหลัง</div>
+    </div>
+
+    <button id="audit-refresh-btn" class="btn btn-primary btn-sm" onclick="loadAuditLogs()">🔄 โหลด AuditLog</button>
+  </div>
+
+  <div class="row g-2 mb-3">
+    <div class="col-md-3">
+      <label class="small fw-bold">วันที่</label>
+      <input type="date" id="audit-date" class="form-control form-control-sm">
+    </div>
+
+    <div class="col-md-3">
+      <label class="small fw-bold">Username</label>
+      <input type="text" id="audit-username" class="form-control form-control-sm" placeholder="เช่น 020305">
+    </div>
+
+    <div class="col-md-3">
+      <label class="small fw-bold">Action</label>
+      <input type="text" id="audit-action" class="form-control form-control-sm" placeholder="เช่น LOGIN, PRINT, SCREENING">
+    </div>
+
+    <div class="col-md-3">
+      <label class="small fw-bold">จำนวนรายการ</label>
+      <select id="audit-limit" class="form-select form-select-sm">
+        <option value="50">50 รายการล่าสุด</option>
+        <option value="100" selected>100 รายการล่าสุด</option>
+        <option value="200">200 รายการล่าสุด</option>
+        <option value="300">300 รายการล่าสุด</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mb-3 flex-wrap">
+    <button class="btn btn-outline-primary btn-sm" onclick="loadAuditLogs()">🔍 ค้นหา</button>
+    <button class="btn btn-outline-secondary btn-sm" onclick="clearAuditFilters()">ล้างตัวกรอง</button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>เวลา</th>
+          <th>Username</th>
+          <th>ชื่อ</th>
+          <th>Role</th>
+          <th>Action</th>
+          <th>Target</th>
+          <th>รายละเอียด</th>
+          <th>User Agent</th>
+        </tr>
+      </thead>
+      <tbody id="audit-log-table-body">
+        <tr>
+          <td colspan="8" class="text-center text-muted">กดโหลด AuditLog</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 </section>
+
       
     </main>
   </div>
@@ -1770,6 +1853,7 @@ function showPage(pageName) {
 
   if (pageName === "settings") {
     loadUsersSettings();
+    loadAuditLogs();
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2449,6 +2533,122 @@ async function resetPasswordWithOtp() {
       if (pendingEl) pendingEl.innerText = pending;
     }
 
+    function getAuditActionBadgeClass(action) {
+  const text = (action || "").toString();
+
+  if (text.includes("LOGIN")) return "bg-info text-dark";
+  if (text.includes("PASSWORD")) return "bg-warning text-dark";
+  if (text.includes("DEACTIVATE")) return "bg-danger";
+  if (text.includes("ACTIVATE")) return "bg-success";
+  if (text.includes("PRINT")) return "bg-primary";
+  if (text.includes("SCREENING_PASS")) return "bg-success";
+  if (text.includes("SCREENING_FAIL")) return "bg-danger";
+  if (text.includes("CERTIFICATE")) return "bg-secondary";
+  if (text.includes("DONOR")) return "bg-dark";
+
+  return "bg-secondary";
+}
+
+async function loadAuditLogs() {
+  const tbody = document.getElementById("audit-log-table-body");
+  if (!tbody) return;
+
+  const date = document.getElementById("audit-date")?.value || "";
+  const username = document.getElementById("audit-username")?.value || "";
+  const action = document.getElementById("audit-action")?.value || "";
+  const limit = document.getElementById("audit-limit")?.value || "100";
+
+  tbody.innerHTML = '<tr><td colspan="8" class="text-center">⌛ กำลังโหลด AuditLog...</td></tr>';
+
+  try {
+    setButtonBusy("audit-refresh-btn", true, "⏳ โหลด...");
+
+    const res = await apiCall("listAuditLogs", {
+      data: JSON.stringify({
+        date: date,
+        username: username,
+        action: action,
+        limit: limit
+      })
+    });
+
+    if (!res || res.status !== "success") {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center text-danger">
+            ${escapeHtml((res && res.message) ? res.message : "โหลด AuditLog ไม่สำเร็จ")}
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const logs = res.logs || [];
+
+    if (logs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">ไม่พบ AuditLog ตามเงื่อนไข</td></tr>';
+      return;
+    }
+
+    let html = "";
+
+    logs.forEach(log => {
+      const actionBadgeClass = getAuditActionBadgeClass(log.action);
+
+      html += `
+        <tr>
+          <td class="text-nowrap">${escapeHtml(log.timestamp || "-")}</td>
+          <td><strong>${escapeHtml(log.username || "-")}</strong></td>
+          <td>${escapeHtml(log.fullName || "-")}</td>
+          <td><span class="badge bg-light text-dark">${escapeHtml(log.role || "-")}</span></td>
+          <td>
+            <span class="badge audit-action-badge ${actionBadgeClass}">
+              ${escapeHtml(log.action || "-")}
+            </span>
+          </td>
+          <td>
+            <div><strong>${escapeHtml(log.targetType || "-")}</strong></div>
+            <div class="small text-muted">${escapeHtml(log.targetId || "-")}</div>
+          </td>
+          <td class="audit-detail-cell">${escapeHtml(log.detail || "-")}</td>
+          <td class="audit-useragent-cell" title="${escapeHtml(log.userAgent || "")}">
+            ${escapeHtml(log.userAgent || "-")}
+          </td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = html;
+
+  } catch (err) {
+    console.error("loadAuditLogs error =", err);
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="text-center text-danger">
+          เกิดข้อผิดพลาด: ${escapeHtml(err.message || err)}
+        </td>
+      </tr>
+    `;
+  } finally {
+    setButtonBusy("audit-refresh-btn", false);
+  }
+}
+
+function clearAuditFilters() {
+  const dateEl = document.getElementById("audit-date");
+  const usernameEl = document.getElementById("audit-username");
+  const actionEl = document.getElementById("audit-action");
+  const limitEl = document.getElementById("audit-limit");
+
+  if (dateEl) dateEl.value = "";
+  if (usernameEl) usernameEl.value = "";
+  if (actionEl) actionEl.value = "";
+  if (limitEl) limitEl.value = "100";
+
+  loadAuditLogs();
+}
+    
     async function loadUsersSettings() {
   const tbody = document.getElementById("users-table-body");
 
