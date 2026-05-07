@@ -1841,6 +1841,16 @@ function buildActionButtons(row, rowStr, disableScreen) {
     return `<div class="btn-group">${certBtn}</div>`;
   }
 
+  const role = currentUser?.role || "";
+
+  if (role === "physician") {
+    return `
+      <div class="btn-group">
+        ${certBtn}
+      </div>
+    `;
+  }
+
   return `
     <div class="btn-group">
       ${editBtn}
