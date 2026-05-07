@@ -955,6 +955,171 @@
 .nav-group.has-active .nav-group-title {
   background: rgba(255, 255, 255, 0.16);
 }
+
+/* =========================
+   SIDEBAR EXPAND ON HOVER
+========================= */
+
+.sidebar {
+  width: 84px;
+  transition: width 0.25s ease;
+  overflow-x: hidden;
+}
+
+.sidebar:hover {
+  width: 290px;
+}
+
+/* โลโก้/ชื่อระบบ */
+.sidebar-brand,
+.sidebar-userbox,
+.sidebar-footer {
+  overflow: hidden;
+}
+
+.brand-text,
+.user-text,
+.nav-label,
+.nav-caret {
+  opacity: 0;
+  visibility: hidden;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar:hover .brand-text,
+.sidebar:hover .user-text,
+.sidebar:hover .nav-label,
+.sidebar:hover .nav-caret {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ปุ่มเมนู */
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-align: left;
+  transition: all 0.2s ease;
+  justify-content: center;
+}
+
+.sidebar:hover .nav-btn {
+  justify-content: flex-start;
+}
+
+.nav-icon {
+  min-width: 24px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.nav-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* เมนูย่อย */
+.nav-group {
+  width: 100%;
+}
+
+.nav-submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  padding-left: 0;
+}
+
+.nav-group.is-open .nav-submenu {
+  max-height: 180px;
+}
+
+.nav-sub-btn {
+  padding-left: 16px;
+}
+
+.sidebar:hover .nav-sub-btn {
+  padding-left: 42px;
+}
+
+/* ตอนยังไม่ hover ไม่ต้องโชว์เมนูย่อย */
+.sidebar:not(:hover) .nav-submenu {
+  max-height: 0 !important;
+}
+
+/* ปุ่ม active */
+.nav-btn.active {
+  background: rgba(255,255,255,0.16);
+}
+
+/* กลุ่มที่มี active */
+.nav-group.has-active > .nav-group-toggle {
+  background: rgba(255,255,255,0.12);
+}
+
+/* user box */
+.sidebar-userbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.user-avatar {
+  min-width: 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+/* brand */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 16px;
+}
+
+.brand-icon {
+  min-width: 52px;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+}
+
+/* Desktop only */
+@media (max-width: 991.98px) {
+  .sidebar {
+    width: 280px !important;
+  }
+
+  .brand-text,
+  .user-text,
+  .nav-label,
+  .nav-caret {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .nav-btn {
+    justify-content: flex-start !important;
+  }
+
+  .sidebar:not(:hover) .nav-submenu {
+    max-height: none !important;
+  }
+}
     
   </style>
 </head>
@@ -998,74 +1163,74 @@
     
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
-        <div class="sidebar-logo">🩸</div>
-        <div>
-          <div class="sidebar-title">CNMI Donor</div>
-          <div class="sidebar-subtitle">Blood Donation System</div>
+        <div class="sidebar-icon">🩸</div>
+        <div class="brand-text">
+          <div class="fw-bold">CNMI Donor</div>
+           <div class="small">Blood Donation System</div>
         </div>
       </div>
 
       <nav class="sidebar-nav">
         <button class="nav-btn active" data-page="dashboard" data-roles="admin,sup_manager,manager,staff,physician" onclick="showPage('dashboard')">
           <span class="nav-icon">📊</span>
-          <span>Dashboard</span>
+          <span class="nav-label">Dashboard</span>
         </button>
 
         <button class="nav-btn" data-page="register" data-roles="admin,sup_manager,manager,staff" onclick="showPage('register')">
           <span class="nav-icon">📝</span>
-          <span>ลงทะเบียนผู้บริจาค</span>
+          <span class="nav-label">ลงทะเบียนผู้บริจาค</span>
         </button>
 
         <button class="nav-btn" data-page="print-a4" data-roles="admin,sup_manager,manager,staff" onclick="showPage('print-a4')">
           <span class="nav-icon">📄</span>
-          <span>พิมพ์ใบสมัคร</span>
+          <span class="nav-label">พิมพ์ใบสมัคร</span>
         </button>
 
         <button class="nav-btn" data-page="today" data-roles="admin,sup_manager,manager,staff,physician" onclick="showPage('today')">
           <span class="nav-icon">📋</span>
-          <span>รายชื่อผู้บริจาควันนี้</span>
+          <span class="nav-label">รายชื่อผู้บริจาควันนี้</span>
         </button>
 
         <button class="nav-btn" data-page="screening" data-roles="admin,sup_manager,manager,staff" onclick="showPage('screening')">
           <span class="nav-icon">🩺</span>
-          <span>คัดกรองผู้บริจาค</span>
+          <span class="nav-label">คัดกรองผู้บริจาค</span>
         </button>
 
         <button class="nav-btn" data-page="sticker" data-roles="admin,sup_manager,manager,staff" onclick="showPage('sticker')">
           <span class="nav-icon">🏷️</span>
-          <span>พิมพ์สติ๊กเกอร์</span>
+          <span class="nav-label">พิมพ์สติ๊กเกอร์</span>
         </button>
 
         <button class="nav-btn" data-page="certificate" data-roles="admin,sup_manager,manager,staff,physician" onclick="showPage('certificate')">
           <span class="nav-icon">📜</span>
-          <span>หนังสือรับรอง</span>
+          <span class="nav-label">หนังสือรับรอง</span>
         </button>
 
         <div class="nav-group" data-group-roles="admin,sup_manager">
-          <button class="nav-btn nav-group-title" type="button">
-            <span>⚙️</span>
-            <span>Users / Settings</span>
-            <span class="nav-chevron">▾</span>
+          <button class="nav-btn nav-group-title" type="button"> onclick="toggleNavGroup('settings-group')">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Users / Settings</span>
+            <span class="nav-caret">▾</span>
           </button>
 
           <div class="nav-submenu">
             <button class="nav-btn nav-sub-btn" data-page="settings" data-roles="admin,sup_manager" onclick="showPage('settings')">
-              <span>👥</span>
-              <span>Settings / Users</span>
+              <span class="nav-icon">👥</span>
+              <span class="nav-label">Settings / Users</span>
             </button>
 
             <button class="nav-btn nav-sub-btn" data-page="audit-logs" data-roles="admin,sup_manager" onclick="showPage('audit-logs')">
-              <span>🧾</span>
-              <span>AuditLog Viewer</span>
+              <span class="nav-icon">🧾</span>
+              <span class="nav-label">AuditLog Viewer</span>
             </button>
-  </div>
-</div>
+          </div>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
-        <div class="user-card">
+        <div class="sidebar-userbox">
           <div class="user-avatar">👤</div>
-          <div>
+          <div class="user-text">
             <div class="user-name" id="sidebar-user-name">-</div>
             <div class="user-role" id="sidebar-user-role">-</div>
           </div>
@@ -1920,6 +2085,13 @@
       });
     }
 
+    function toggleNavGroup(groupId) {
+      const group = document.getElementById(groupId);
+      if (!group) return;
+
+      group.classList.toggle("is-open");
+    }
+    
     function setButtonBusy(buttonId, isBusy, busyText) {
       const btn = document.getElementById(buttonId);
       if (!btn) return;
