@@ -1214,6 +1214,43 @@
     </div>
   </div>
 </div>
+
+    
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 20px; overflow: hidden;">
+      <div class="modal-body text-center p-4">
+        <div style="
+          width:72px;
+          height:72px;
+          border-radius:50%;
+          background:#fff7e6;
+          color:#d99a00;
+          display:grid;
+          place-items:center;
+          font-size:38px;
+          margin:0 auto 16px auto;
+        ">
+          ⚠️
+        </div>
+
+        <h4 id="confirm-title" class="fw-bold mb-2">ยืนยันการทำรายการ</h4>
+        <p id="confirm-message" class="text-muted mb-4" style="white-space: pre-line;">
+          กรุณายืนยัน
+        </p>
+
+        <div class="d-flex gap-2 justify-content-center">
+          <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+            ยกเลิก
+          </button>
+          <button type="button" class="btn btn-warning px-4" id="confirm-ok-btn">
+            ยืนยัน
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
     
 
      <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -1839,6 +1876,42 @@ async function logout() {
   showLoginScreen();
 }
 
+    function showConfirmPopup(title, message, okText = "ยืนยัน") {
+  return new Promise(resolve => {
+    const titleEl = document.getElementById("confirm-title");
+    const messageEl = document.getElementById("confirm-message");
+    const okBtn = document.getElementById("confirm-ok-btn");
+    const modalEl = document.getElementById("confirmModal");
+
+    if (titleEl) titleEl.innerText = title || "ยืนยันการทำรายการ";
+    if (messageEl) messageEl.innerText = message || "กรุณายืนยัน";
+    if (okBtn) okBtn.innerText = okText || "ยืนยัน";
+
+    const modal = new bootstrap.Modal(modalEl);
+
+    const cleanup = () => {
+      okBtn.removeEventListener("click", onOk);
+      modalEl.removeEventListener("hidden.bs.modal", onCancel);
+    };
+
+    const onOk = () => {
+      cleanup();
+      modal.hide();
+      resolve(true);
+    };
+
+    const onCancel = () => {
+      cleanup();
+      resolve(false);
+    };
+
+    okBtn.addEventListener("click", onOk);
+    modalEl.addEventListener("hidden.bs.modal", onCancel, { once: true });
+
+    modal.show();
+  });
+}
+    
     function showSuccessPopup(title, message) {
       const titleEl = document.getElementById("success-title");
       const messageEl = document.getElementById("success-message");
@@ -2354,10 +2427,28 @@ async function resetPasswordWithOtp() {
           <td>${escapeHtml(user.email || "-")}</td>
           <td>${escapeHtml(user.lastLogin || "-")}</td>
           <td>
-            <button class="btn btn-sm btn-outline-warning"
-              onclick="adminResetPassword('${escapeHtml(user.username)}', '${escapeHtml(user.fullName)}')">
-              🔑 Reset
-            </button>
+            <div class="d-flex gap-1 flex-wrap">
+              <button class="btn btn-sm btn-outline-warning"
+                onclick="adminResetPassword('${escapeHtml(user.username)}', '${escapeHtml(user.fullName)}')">
+                🔑 Reset
+              </button>
+
+              ${user.username === currentUser?.username ? `
+                <button class="btn btn-sm btn-outline-secondary" disabled>
+                  ตัวเอง
+                </button>
+              ` : user.active ? `
+                <button class="btn btn-sm btn-outline-danger"
+                  onclick="adminSetUserActive('${escapeHtml(user.username)}', '${escapeHtml(user.fullName)}', false)">
+                  ปิดใช้
+                </button>
+              ` : `
+               <button class="btn btn-sm btn-outline-success"
+                  onclick="adminSetUserActive('${escapeHtml(user.username)}', '${escapeHtml(user.fullName)}', true)">
+                  เปิดใช้
+                </button>
+              `}
+            </div>
           </td>
         </tr>
       `;
@@ -2387,14 +2478,16 @@ async function resetPasswordWithOtp() {
     return;
   }
 
-  const ok = confirm(
+  const ok = await showConfirmPopup(
+    "Reset password?",
     "ยืนยัน Reset password ให้ผู้ใช้นี้?\n\n" +
     "Username: " + username + "\n" +
     "ชื่อ: " + (fullName || "-") + "\n\n" +
-    "หลัง reset ผู้ใช้นี้ต้อง Login ด้วย username เป็นรหัสผ่านเริ่มต้น และระบบจะบังคับเปลี่ยนรหัสผ่านใหม่"
+    "หลัง reset ผู้ใช้นี้ต้อง Login ด้วย username เป็นรหัสผ่านเริ่มต้น และระบบจะบังคับเปลี่ยนรหัสผ่านใหม่",
+    "Reset password"
   );
 
-  if (!ok) return;
+if (!ok) return;
 
   try {
     const res = await apiCall("adminResetUserPassword", {
@@ -2420,6 +2513,52 @@ async function resetPasswordWithOtp() {
     alert("เกิดข้อผิดพลาด: " + (err.message || err));
   }
 }
+
+
+    async function adminSetUserActive(username, fullName, active) {
+  if (!username) {
+    showSuccessPopup("ไม่พบ username", "ไม่สามารถเปลี่ยนสถานะผู้ใช้งานได้");
+    return;
+  }
+
+  const ok = await showConfirmPopup(
+    active ? "เปิดใช้งานผู้ใช้?" : "ปิดใช้งานผู้ใช้?",
+    "Username: " + username + "\n" +
+    "ชื่อ: " + (fullName || "-") + "\n\n" +
+    (active
+      ? "ผู้ใช้นี้จะกลับมา Login ได้ตามปกติ"
+      : "ผู้ใช้นี้จะ Login ไม่ได้ และ session เดิมจะถูกล้างทันที"),
+    active ? "เปิดใช้งาน" : "ปิดใช้งาน"
+  );
+
+  if (!ok) return;
+
+  try {
+    const res = await apiCall("adminSetUserActive", {
+      data: JSON.stringify({
+        username: username,
+        active: active
+      })
+    });
+
+    if (!res || res.status !== "success") {
+      showSuccessPopup("ทำรายการไม่สำเร็จ", (res && res.message) ? res.message : "เปลี่ยนสถานะไม่สำเร็จ");
+      return;
+    }
+
+    showSuccessPopup(
+      active ? "เปิดใช้งานสำเร็จ" : "ปิดใช้งานสำเร็จ",
+      res.message || "ดำเนินการสำเร็จ"
+    );
+
+    loadUsersSettings();
+
+  } catch (err) {
+    console.error("adminSetUserActive error =", err);
+    showSuccessPopup("เกิดข้อผิดพลาด", err.message || String(err));
+  }
+}
+    
     
     async function loadTable() {
       const dateInput = document.getElementById("table-date").value;
