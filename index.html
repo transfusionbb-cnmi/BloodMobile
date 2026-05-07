@@ -3,62 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <title>CNMI Blood Donation</title>
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
   <style>
-    :root {
-      --cnmi-blue: #2f80ed;
-      --cnmi-blue-soft: #eaf4ff;
-      --cnmi-blue-border: #b8dafc;
-      --cnmi-blue-dark: #185abc;
-      --cnmi-text: #18324a;
-      --cnmi-muted: #6b7a8a;
-      --cnmi-card: #ffffff;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      min-height: 100%;
-      overflow-x: hidden;
-    }
-
-    body {
-      background:
-        radial-gradient(circle at top left, #dff1ff 0, transparent 34%),
-        linear-gradient(135deg, #f7fbff 0%, #eaf4ff 100%);
-      padding: 16px;
-      font-family: 'Sarabun', sans-serif;
-      color: var(--cnmi-text);
-    }
-
-    .app-topbar {
-      max-width: 1320px;
-      margin: 0 auto 14px auto;
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid var(--cnmi-blue-border);
-      border-radius: 18px;
-      padding: 14px 18px;
-      box-shadow: 0 10px 24px rgba(47, 128, 237, 0.10);
-    }
-
-    .app-title {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--cnmi-blue-dark);
-    }
+    :root { --cnmi-blue: #2f80ed; --cnmi-blue-soft: #eaf4ff; --cnmi-blue-border: #b8dafc; --cnmi-blue-dark: #185abc; --cnmi-text: #18324a; --cnmi-muted: #6b7a8a; --cnmi-card: #ffffff; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; overflow-x: hidden; }
+    body { background: radial-gradient(circle at top left, #dff1ff 0, transparent 34%), linear-gradient(135deg, #f7fbff 0%, #eaf4ff 100%); padding: 16px; font-family: 'Sarabun', sans-serif; color: var(--cnmi-text); }
+    .app-topbar { max-width: 1320px; margin: 0 auto 14px auto; background: rgba(255, 255, 255, 0.92); border: 1px solid var(--cnmi-blue-border); border-radius: 18px; padding: 14px 18px; box-shadow: 0 10px 24px rgba(47, 128, 237, 0.10); }
+    .app-title { margin: 0; font-size: 22px; font-weight: 700; color: var(--cnmi-blue-dark); }
 
     .app-subtitle {
       margin: 4px 0 0 0;
@@ -1515,6 +1472,7 @@
             </button>
           </div>
         </div>
+      </nav>
 
       <div class="sidebar-footer">
         <div class="sidebar-userbox">
@@ -3488,8 +3446,12 @@ if (!ok) return;
     
     
     async function loadTable() {
-      const dateInput = document.getElementById("table-date").value;
-      const dnQuery = (document.getElementById("dn-search")?.value || "").trim().toLowerCase();
+      let dateInput = document.getElementById('table-date')?.value || getLocalDateInputValue();
+      const dnQuery = (document.getElementById('dn-search')?.value || "").trim().toLowerCase();
+
+      if (document.getElementById('table-date') && !document.getElementById('table-date').value) {
+        document.getElementById('table-date').value = dateInput;
+      }
       const tbody = document.getElementById("visit-table-body");
 
       tbody.innerHTML = '<tr><td colspan="6" class="text-center">⌛ กำลังโหลด...</td></tr>';
