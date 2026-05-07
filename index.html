@@ -1120,6 +1120,296 @@
     max-height: none !important;
   }
 }
+
+    /* ======================================================
+   FINAL FIX: Sidebar Expand on Hover for CNMI Donor
+   วางท้ายสุดเพื่อ override CSS เดิมทั้งหมด
+====================================================== */
+
+:root {
+  --sidebar-collapsed-width: 76px;
+  --sidebar-expanded-width: 300px;
+}
+
+/* ===== Desktop: default collapsed ===== */
+@media (min-width: 769px) {
+  .app-layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: var(--sidebar-collapsed-width) !important;
+    min-width: var(--sidebar-collapsed-width) !important;
+    max-width: var(--sidebar-collapsed-width) !important;
+    flex: 0 0 var(--sidebar-collapsed-width) !important;
+    transition:
+      width 0.25s ease,
+      min-width 0.25s ease,
+      max-width 0.25s ease,
+      flex-basis 0.25s ease !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .sidebar:hover {
+    width: var(--sidebar-expanded-width) !important;
+    min-width: var(--sidebar-expanded-width) !important;
+    max-width: var(--sidebar-expanded-width) !important;
+    flex-basis: var(--sidebar-expanded-width) !important;
+  }
+
+  .app-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ===== Brand / Logo ===== */
+  .sidebar-brand {
+    justify-content: center !important;
+    padding: 20px 10px !important;
+    gap: 12px !important;
+  }
+
+  .sidebar:hover .sidebar-brand {
+    justify-content: flex-start !important;
+    padding: 24px 22px 18px 22px !important;
+  }
+
+  .sidebar-logo {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    border-radius: 14px !important;
+    font-size: 22px !important;
+  }
+
+  .sidebar:hover .sidebar-logo {
+    width: 56px !important;
+    min-width: 56px !important;
+    height: 56px !important;
+    border-radius: 18px !important;
+    font-size: 30px !important;
+  }
+
+  .sidebar-title,
+  .sidebar-subtitle,
+  .brand-text {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .sidebar-title,
+  .sidebar:hover .sidebar-subtitle,
+  .sidebar:hover .brand-text {
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+    max-width: 220px !important;
+    overflow: visible !important;
+  }
+
+  /* ===== Nav button collapsed ===== */
+  .sidebar-nav {
+    padding: 14px 10px !important;
+  }
+
+  .nav-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-height: 52px !important;
+    padding: 12px 0 !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+  }
+
+  .sidebar:hover .nav-btn {
+    justify-content: flex-start !important;
+    padding: 12px 16px !important;
+  }
+
+  .nav-icon,
+  .nav-btn > span:first-child {
+    width: 28px !important;
+    min-width: 28px !important;
+    text-align: center !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+  }
+
+  /* ซ่อน label ของเมนูตอน sidebar หุบ */
+  .nav-label,
+  .nav-caret,
+  .nav-chevron,
+  .nav-btn > span:not(:first-child) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    transition: opacity 0.18s ease;
+  }
+
+  .sidebar:hover .nav-label,
+  .sidebar:hover .nav-caret,
+  .sidebar:hover .nav-chevron,
+  .sidebar:hover .nav-btn > span:not(:first-child) {
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+    max-width: 220px !important;
+    overflow: visible !important;
+  }
+
+  .nav-caret,
+  .nav-chevron {
+    margin-left: auto !important;
+  }
+
+  /* ===== Submenu ===== */
+  .nav-group {
+    width: 100% !important;
+  }
+
+  .nav-submenu {
+    display: block !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    padding-left: 0 !important;
+    margin: 0 !important;
+    transition: max-height 0.22s ease !important;
+  }
+
+  /* ตอน hover sidebar แล้ว hover group หรือ group active ค่อยโชว์ submenu */
+  .sidebar:hover .nav-group:hover .nav-submenu,
+  .sidebar:hover .nav-group.is-open .nav-submenu,
+  .sidebar:hover .nav-group.has-active .nav-submenu {
+    max-height: 180px !important;
+    margin: 4px 0 8px 0 !important;
+  }
+
+  .nav-sub-btn {
+    font-size: 14px !important;
+    min-height: 44px !important;
+    padding-left: 40px !important;
+  }
+
+  .sidebar:hover .nav-sub-btn {
+    padding-left: 42px !important;
+  }
+
+  .nav-group.has-active > .nav-group-toggle,
+  .nav-group.has-active > .nav-group-title {
+    background: rgba(255, 255, 255, 0.12) !important;
+  }
+
+  /* ===== User footer ===== */
+  .sidebar-footer {
+    padding: 14px 10px !important;
+    overflow: hidden !important;
+  }
+
+  .sidebar-userbox,
+  .user-card {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .sidebar:hover .sidebar-userbox,
+  .sidebar:hover .user-card {
+    justify-content: flex-start !important;
+  }
+
+  .user-avatar {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+  }
+
+  .user-text,
+  .user-name,
+  .user-role {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+  }
+
+  .sidebar:hover .user-text,
+  .sidebar:hover .user-name,
+  .sidebar:hover .user-role {
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+    max-width: 220px !important;
+    overflow: visible !important;
+  }
+
+  .logout-btn {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+  }
+
+  .sidebar:not(:hover) .logout-btn {
+    font-size: 0 !important;
+    padding: 12px 0 !important;
+  }
+
+  .sidebar:not(:hover) .logout-btn::before {
+    content: "↪";
+    font-size: 20px;
+  }
+
+  .sidebar:hover .logout-btn {
+    font-size: 16px !important;
+  }
+}
+
+/* ===== Mobile: ใช้ sidebar แบบเดิม ไม่ใช้ hover ===== */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 310px !important;
+    min-width: 310px !important;
+    max-width: 310px !important;
+    flex-basis: 310px !important;
+  }
+
+  .sidebar-title,
+  .sidebar-subtitle,
+  .brand-text,
+  .user-text,
+  .user-name,
+  .user-role,
+  .nav-label,
+  .nav-caret,
+  .nav-chevron,
+  .nav-btn > span:not(:first-child) {
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+
+  .nav-btn {
+    justify-content: flex-start !important;
+    padding: 14px 16px !important;
+  }
+}
     
   </style>
 </head>
