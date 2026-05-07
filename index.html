@@ -1170,11 +1170,12 @@
             <th>First Login</th>
             <th>Email</th>
             <th>Last Login</th>
+            <th>จัดการ</th>
           </tr>
         </thead>
         <tbody id="users-table-body">
           <tr>
-            <td colspan="9" class="text-center text-muted">กดโหลดรายชื่อผู้ใช้งาน</td>
+            <td colspan="10" class="text-center text-muted">กดโหลดรายชื่อผู้ใช้งาน</td>
           </tr>
         </tbody>
       </table>
@@ -2352,6 +2353,12 @@ async function resetPasswordWithOtp() {
           <td>${firstLoginBadge}</td>
           <td>${escapeHtml(user.email || "-")}</td>
           <td>${escapeHtml(user.lastLogin || "-")}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-warning"
+              onclick="adminResetPassword('${escapeHtml(user.username)}', '${escapeHtml(user.fullName)}')">
+              🔑 Reset
+            </button>
+          </td>
         </tr>
       `;
     });
@@ -2370,6 +2377,47 @@ async function resetPasswordWithOtp() {
     `;
   } finally {
     setButtonBusy("users-refresh-btn", false);
+  }
+}
+
+
+    async function adminResetPassword(username, fullName) {
+  if (!username) {
+    alert("ไม่พบ username");
+    return;
+  }
+
+  const ok = confirm(
+    "ยืนยัน Reset password ให้ผู้ใช้นี้?\n\n" +
+    "Username: " + username + "\n" +
+    "ชื่อ: " + (fullName || "-") + "\n\n" +
+    "หลัง reset ผู้ใช้นี้ต้อง Login ด้วย username เป็นรหัสผ่านเริ่มต้น และระบบจะบังคับเปลี่ยนรหัสผ่านใหม่"
+  );
+
+  if (!ok) return;
+
+  try {
+    const res = await apiCall("adminResetUserPassword", {
+      data: JSON.stringify({
+        username: username
+      })
+    });
+
+    if (!res || res.status !== "success") {
+      alert((res && res.message) ? res.message : "Reset password ไม่สำเร็จ");
+      return;
+    }
+
+    showSuccessPopup(
+      "Reset password สำเร็จ",
+      "ผู้ใช้ " + username + " ต้อง Login ด้วย username เป็นรหัสผ่านเริ่มต้น"
+    );
+
+    loadUsersSettings();
+
+  } catch (err) {
+    console.error("adminResetPassword error =", err);
+    alert("เกิดข้อผิดพลาด: " + (err.message || err));
   }
 }
     
