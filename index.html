@@ -2035,6 +2035,7 @@
 
   <script>
     console.log("CNMI Blood Donation GitHub Version 2026-05-06");
+    let currentTablePage = "today";
 
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxmAMXoX2QEs3T-xb0Gyo-bBX2o-XUJ8n9YVb_rjiGDHee3xHs1sAiZf5CbZHkZI9BbQ/exec";
     const API_TIMEOUT_MS = 30000;
@@ -2236,8 +2237,9 @@ function showPage(pageName) {
   closeSidebar();
 
   if (isTablePage(pageName)) {
+    currentTablePage = pageName;
     moveVisitTableTo(pageName);
-    loadTable();
+    loadTable(pageName);
   }
 
   if (pageName === "dashboard") {
@@ -2264,19 +2266,36 @@ function rowHasBag(row) {
 }
 
 function filterByCurrentTableMode(data) {
-  if (currentTableMode === "screening") {
-    return data.filter(row => rowIsPending(row) && !rowHasBag(row));
-  }
+  const mode = currentTableMode || "today";
 
-  if (currentTableMode === "sticker") {
-    return data.filter(row => rowHasBag(row));
-  }
+  return (data || []).filter(row => {
+    const status = (row.status || "").toString().trim();
+    const hasBag = rowHasBag(row);
+    const isPending = rowIsPending(row);
+    const isPassed = status === "ผ่าน";
 
-  if (currentTableMode === "certificate") {
-    return data.filter(row => row.status === "ผ่าน" && rowHasBag(row));
-  }
+    if (mode === "today") {
+      return true;
+    }
 
-  return data;
+    if (mode === "print-a4") {
+      return true;
+    }
+
+    if (mode === "screening") {
+      return isPending && !hasBag;
+    }
+
+    if (mode === "sticker") {
+      return hasBag;
+    }
+
+    if (mode === "certificate") {
+      return isPassed && hasBag;
+    }
+
+    return true;
+  });
 }
 
 async function logPrintAction(printType, row, extra = {}) {
@@ -2300,66 +2319,64 @@ async function logPrintAction(printType, row, extra = {}) {
 }
     
 function buildActionButtons(row, rowStr, disableScreen) {
-  const editBtn = `
-    <button class="btn btn-sm action-btn action-btn-edit"
-      onclick="event.stopPropagation(); prepareEdit('${rowStr}')">✏️ แก้ไขข้อมูล</button>
-  `;
+  const mode = currentTableMode || "today";
 
-  const printA4Btn = `
-    <button class="btn btn-sm action-btn action-btn-print"
-      onclick="event.stopPropagation(); printA4FromRow('${rowStr}')">📄 พิมพ์ใบสมัคร</button>
-  `;
-
-  const certBtn = `
-    <button class="btn btn-sm action-btn action-btn-cert"
-      onclick="event.stopPropagation(); printCertificateFromRow('${rowStr}')">📜 พิมพ์ใบรับรอง</button>
-  `;
-
-  const screeningBtn = `
-    <button class="btn btn-sm action-btn action-btn-screen"
-      onclick="event.stopPropagation(); openScreening('${rowStr}')" ${disableScreen}>🩺 ลงผลคัดกรอง</button>
-  `;
-
-  const stickerBtn = `
-    <button class="btn btn-sm action-btn action-btn-sticker"
-      onclick="event.stopPropagation(); reprintTSCFromRow('${rowStr}')">🏷️ พิมพ์สติ๊กเกอร์</button>
-  `;
-
-  if (currentTableMode === "print-a4") {
-    return `<div class="btn-group">${printA4Btn}</div>`;
-  }
-
-  if (currentTableMode === "screening") {
-    return `<div class="btn-group">${screeningBtn}</div>`;
-  }
-
-  if (currentTableMode === "sticker") {
-    return `<div class="btn-group">${stickerBtn}</div>`;
-  }
-
-  if (currentTableMode === "certificate") {
-    return `<div class="btn-group">${certBtn}</div>`;
-  }
-
-  const role = currentUser?.role || "";
-
-  if (role === "physician") {
+  if (mode === "today") {
     return `
       <div class="btn-group">
-        ${certBtn}
+        <button class="btn btn-sm action-btn action-btn-edit"
+          onclick="event.stopPropagation(); prepareEdit('${rowStr}')">
+          ✏️ แก้ไขข้อมูล
+        </button>
       </div>
     `;
   }
 
-  return `
-    <div class="btn-group">
-      ${editBtn}
-      ${printA4Btn}
-      ${certBtn}
-      ${screeningBtn}
-      ${stickerBtn}
-    </div>
-  `;
+  if (mode === "print-a4") {
+    return `
+      <div class="btn-group">
+        <button class="btn btn-sm action-btn action-btn-print"
+          onclick="event.stopPropagation(); printA4FromRow('${rowStr}')">
+          📄 พิมพ์ใบสมัคร
+        </button>
+      </div>
+    `;
+  }
+
+  if (mode === "screening") {
+    return `
+      <div class="btn-group">
+        <button class="btn btn-sm action-btn action-btn-screen"
+          onclick="event.stopPropagation(); openScreening('${rowStr}')" ${disableScreen || ""}>
+          🩺 ลงผลคัดกรอง
+        </button>
+      </div>
+    `;
+  }
+
+  if (mode === "sticker") {
+    return `
+      <div class="btn-group">
+        <button class="btn btn-sm action-btn action-btn-sticker"
+          onclick="event.stopPropagation(); reprintTSCFromRow('${rowStr}')">
+          🏷️ พิมพ์สติ๊กเกอร์
+        </button>
+      </div>
+    `;
+  }
+
+  if (mode === "certificate") {
+    return `
+      <div class="btn-group">
+        <button class="btn btn-sm action-btn action-btn-cert"
+          onclick="event.stopPropagation(); printCertificateFromRow('${rowStr}')">
+          📜 พิมพ์ใบรับรอง
+        </button>
+      </div>
+    `;
+  }
+
+  return "-";
 }
 
 function openSidebar() {
