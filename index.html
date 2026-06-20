@@ -538,10 +538,19 @@
         white-space: nowrap;
       }
 
+      /*
+       * Main specimen/bag barcode
+       * - Use the SVG intrinsic width so browser printing does not squeeze the bars.
+       * - Keep the intrinsic SVG width so barcode modules are not squeezed by CSS.
+       * - Crisp edges reduce uneven thermal-printer rasterisation.
+       */
       .bc-main-sticker {
-        width: 31mm;
-        height: 8.4mm;
+        width: auto;
+        max-width: 44mm;
+        height: 6.4mm;
         display: block;
+        overflow: visible;
+        shape-rendering: crispEdges;
       }
 
       .bc-component-sticker {
@@ -2141,7 +2150,7 @@
   <div id="tsc-template"></div>
 
   <script>
-    console.log("CNMI Blood Donation GitHub Version 2026-05-06");
+    console.log("CNMI Blood Donation GitHub Version 2026-06-20 Barcode Fix");
     let currentTablePage = "today";
 
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxmAMXoX2QEs3T-xb0Gyo-bBX2o-XUJ8n9YVb_rjiGDHee3xHs1sAiZf5CbZHkZI9BbQ/exec";
@@ -3971,11 +3980,13 @@ if (!ok) return;
       setTimeout(() => {
         document.querySelectorAll(".bc-main-sticker").forEach(el => {
           JsBarcode(el, el.dataset.value || "", {
-            format: "CODE128",
-            width: 0.80,
-            height: 30,
+            // Use a fixed Code 128 Set B pattern instead of automatic subset switching.
+            // Integer module width + quiet zones make thermal printing more stable.
+            format: "CODE128B",
+            width: 1,
+            height: 24,
             displayValue: false,
-            margin: 0,
+            margin: 10,
             textMargin: 0,
             fontSize: 0
           });
