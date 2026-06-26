@@ -556,8 +556,8 @@
        */
       .bc-bag-sticker {
         width: auto;
-        max-width: 40mm;
-        height: 6.6mm;
+        max-width: 33mm;
+        height: 6.0mm;
         display: block;
         overflow: visible;
         shape-rendering: crispEdges;
@@ -4008,13 +4008,14 @@ if (!ok) return;
       setTimeout(() => {
         document.querySelectorAll(".bc-bag-sticker").forEach(el => {
           JsBarcode(el, el.dataset.value || "", {
-            // Bag number labels: make the top barcode wider to better match the LIS print layout.
-            // Increase module width and reduce quiet-zone margin so the printed barcode is not too narrow.
-            format: "CODE128B",
-            width: 1.35,
-            height: 24,
+            // Bag number labels: keep the original compact overall size,
+            // but use automatic Code 128 subset switching so the bars/modules
+            // are wider and closer to the LIS barcode pattern without stretching the barcode.
+            format: "CODE128",
+            width: 1,
+            height: 22,
             displayValue: false,
-            margin: 2,
+            margin: 6,
             textMargin: 0,
             fontSize: 0
           });
