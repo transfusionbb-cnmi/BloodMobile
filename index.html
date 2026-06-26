@@ -556,7 +556,7 @@
        */
       .bc-bag-sticker {
         width: auto;
-        max-width: 33mm;
+        max-width: 31mm;
         height: 8.2mm;
         display: block;
         overflow: visible;
@@ -565,7 +565,7 @@
 
       .bc-main-sticker {
         width: auto;
-        max-width: 35mm;
+        max-width: 31mm;
         height: 8.2mm;
         display: block;
         overflow: visible;
@@ -4023,7 +4023,7 @@ if (!ok) return;
             // Match LIS data structure: CN prefix + Code 128 Auto.
             // Auto mode can switch between Set B and Set C for mixed letters/numbers.
             format: "CODE128",
-            width: 1,
+            width: 1.10,
             height: 32,
             displayValue: false,
             margin: 4,
@@ -4036,7 +4036,7 @@ if (!ok) return;
           JsBarcode(el, el.dataset.value || "", {
             // Use the same CN-prefixed Code 128 Auto settings as the bag sticker.
             format: "CODE128",
-            width: 1,
+            width: 1.10,
             height: 32,
             displayValue: false,
             margin: 4,
