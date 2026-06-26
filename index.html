@@ -550,21 +550,14 @@
 
       /*
        * Main specimen/bag barcode
-       * - Use the SVG intrinsic width so browser printing does not squeeze the bars.
-       * - Keep the intrinsic SVG width so barcode modules are not squeezed by CSS.
+       * - Fixed at 31 mm: 6 mm narrower than the 37 mm component barcode.
+       * - The bars are rendered from LIS-matched Code 128 codewords, not Auto mode.
        * - Crisp edges reduce uneven thermal-printer rasterisation.
        */
-      .bc-bag-sticker {
-        width: auto;
-        max-width: 31mm;
-        height: 8.2mm;
-        display: block;
-        overflow: visible;
-        shape-rendering: crispEdges;
-      }
-
+      .bc-bag-sticker,
       .bc-main-sticker {
-        width: auto;
+        width: 31mm;
+        min-width: 31mm;
         max-width: 31mm;
         height: 8.2mm;
         display: block;
@@ -3905,6 +3898,168 @@ if (!ok) return;
         .replace(/'/g, "&#039;");
     }
 
+    /*
+     * Code 128 patterns, codeword 0-106.
+     * Each digit is a run width in modules, alternating bar/space from left to right.
+     */
+    const LIS_CODE128_PATTERNS = Object.freeze([
+      "212222", "222122", "222221", "121223", "121322", "131222", "122213", "122312", "132212", "221213",
+      "221312", "231212", "112232", "122132", "122231", "113222", "123122", "123221", "223211", "221132",
+      "221231", "213212", "223112", "312131", "311222", "321122", "321221", "312212", "322112", "322211",
+      "212123", "212321", "232121", "111323", "131123", "131321", "112313", "132113", "132311", "211313",
+      "231113", "231311", "112133", "112331", "132131", "113123", "113321", "133121", "313121", "211331",
+      "231131", "213113", "213311", "213131", "311123", "311321", "331121", "312113", "312311", "332111",
+      "314111", "221411", "431111", "111224", "111422", "121124", "121421", "141122", "141221", "112214",
+      "112412", "122114", "122411", "142112", "142211", "241211", "221114", "413111", "241112", "134111",
+      "111242", "121142", "121241", "114212", "124112", "124211", "411212", "421112", "421211", "212141",
+      "214121", "412121", "111143", "111341", "131141", "114113", "114311", "411113", "411311", "113141",
+      "114131", "311141", "411131", "211412", "211214", "211232", "2331112"
+    ]);
+
+    function buildLisCodewords(value) {
+      const normalized = (value || "").toString().trim().toUpperCase();
+      const match = /^CN(\d+)([A-Z]\d+)?$/.exec(normalized);
+      if (!match) {
+        throw new Error("รหัสสำหรับรูปแบบ LIS ต้องเป็น CN ตามด้วยตัวเลข และอาจมีรหัส Component เช่น C1 หรือ E2 ต่อท้าย");
+      }
+
+      const digits = match[1];
+      const suffix = match[2] || "";
+
+      // LIS pattern:
+      // 1) Start in Code Set B for the CN prefix.
+      // 2) Switch to Code Set C and pair the bag-number digits from the LEFT.
+      // 3) Switch back to Code Set B for an unpaired final digit and/or Component suffix.
+      // Examples:
+      //   CN6910097   => CN | 69 | 10 | 09 | 7
+      //   CN6910097E2 => CN | 69 | 10 | 09 | 7 | E | 2
+      const codewords = [104, 35, 46]; // Start B, C, N
+      let isCodeSetB = true;
+
+      if (digits.length >= 2) {
+        codewords.push(99); // Switch B -> C.
+        isCodeSetB = false;
+
+        const pairedLength = digits.length - (digits.length % 2);
+        for (let i = 0; i < pairedLength; i += 2) {
+          codewords.push(Number(digits.slice(i, i + 2)));
+        }
+
+        if (digits.length % 2 === 1) {
+          codewords.push(100); // Switch C -> B.
+          isCodeSetB = true;
+          codewords.push(digits.charCodeAt(digits.length - 1) - 32);
+        }
+      } else {
+        codewords.push(digits.charCodeAt(0) - 32);
+      }
+
+      if (suffix) {
+        if (!isCodeSetB) {
+          codewords.push(100); // Component letters require Code Set B.
+          isCodeSetB = true;
+        }
+
+        for (const char of suffix) {
+          const codeword = char.charCodeAt(0) - 32;
+          if (codeword < 0 || codeword > 95) {
+            throw new Error("รหัส Component มีอักขระที่ Code 128 Set B ไม่รองรับ");
+          }
+          codewords.push(codeword);
+        }
+      }
+
+      let checksum = codewords[0];
+      for (let i = 1; i < codewords.length; i += 1) {
+        checksum += codewords[i] * i;
+      }
+      codewords.push(checksum % 103, 106);
+      return codewords;
+    }
+
+    function renderLisBarcode(svg, value, options = {}) {
+      const {
+        widthMm = 31,
+        heightMm = 8.2,
+        barHeight = 32,
+        quietModules = 4
+      } = options;
+
+      let codewords;
+
+      try {
+        codewords = buildLisCodewords(value);
+      } catch (err) {
+        // Operational fallback for unexpected legacy data only.
+        JsBarcode(svg, value || "", {
+          format: "CODE128",
+          width: 1,
+          height: barHeight,
+          displayValue: false,
+          margin: quietModules,
+          textMargin: 0,
+          fontSize: 0
+        });
+        console.warn("LIS barcode fallback:", err);
+        return;
+      }
+
+      const svgNs = "http://www.w3.org/2000/svg";
+      const bars = [];
+      let x = quietModules;
+
+      codewords.forEach(codeword => {
+        const pattern = LIS_CODE128_PATTERNS[codeword];
+        let isBar = true;
+
+        for (const run of pattern) {
+          const runWidth = Number(run);
+          if (isBar) {
+            bars.push({ x, width: runWidth });
+          }
+          x += runWidth;
+          isBar = !isBar;
+        }
+      });
+
+      const totalModules = x + quietModules;
+      svg.replaceChildren();
+      svg.setAttribute("viewBox", `0 0 ${totalModules} ${barHeight}`);
+      svg.setAttribute("preserveAspectRatio", "none");
+      svg.setAttribute("width", `${widthMm}mm`);
+      svg.setAttribute("height", `${heightMm}mm`);
+      svg.setAttribute("shape-rendering", "crispEdges");
+      svg.setAttribute("data-codewords", codewords.join(","));
+
+      bars.forEach(bar => {
+        const rect = document.createElementNS(svgNs, "rect");
+        rect.setAttribute("x", String(bar.x));
+        rect.setAttribute("y", "0");
+        rect.setAttribute("width", String(bar.width));
+        rect.setAttribute("height", String(barHeight));
+        rect.setAttribute("fill", "#000");
+        svg.appendChild(rect);
+      });
+    }
+
+    function renderLisBagBarcode(svg, value) {
+      renderLisBarcode(svg, value, {
+        widthMm: 31,
+        heightMm: 8.2,
+        barHeight: 32,
+        quietModules: 4
+      });
+    }
+
+    function renderLisComponentBarcode(svg, value) {
+      renderLisBarcode(svg, value, {
+        widthMm: 37,
+        heightMm: 9.2,
+        barHeight: 30,
+        quietModules: 4
+      });
+    }
+
     async function printTSCFromRow(encodedRow) {
       let row = JSON.parse(decodeURIComponent(encodedRow));
 
@@ -4019,43 +4174,17 @@ if (!ok) return;
 
       setTimeout(() => {
         document.querySelectorAll(".bc-bag-sticker").forEach(el => {
-          JsBarcode(el, el.dataset.value || "", {
-            // Match LIS data structure: CN prefix + Code 128 Auto.
-            // Auto mode can switch between Set B and Set C for mixed letters/numbers.
-            format: "CODE128",
-            width: 1.10,
-            height: 32,
-            displayValue: false,
-            margin: 4,
-            textMargin: 0,
-            fontSize: 0
-          });
+          renderLisBagBarcode(el, el.dataset.value || "");
         });
 
         document.querySelectorAll(".bc-main-sticker").forEach(el => {
-          JsBarcode(el, el.dataset.value || "", {
-            // Use the same CN-prefixed Code 128 Auto settings as the bag sticker.
-            format: "CODE128",
-            width: 1.10,
-            height: 32,
-            displayValue: false,
-            margin: 4,
-            textMargin: 0,
-            fontSize: 0
-          });
+          renderLisBagBarcode(el, el.dataset.value || "");
         });
 
         document.querySelectorAll(".bc-component-sticker").forEach(el => {
-          JsBarcode(el, el.dataset.value || "", {
-            // Component barcode also includes the CN prefix and uses Code 128 Auto.
-            format: "CODE128",
-            width: 0.80,
-            height: 30,
-            displayValue: false,
-            margin: 0,
-            textMargin: 0,
-            fontSize: 0
-          });
+          // Match LIS: encode the bag-number digits with the same fixed B/C sequence,
+          // then continue in Code Set B for C1, C2, E1 or E2.
+          renderLisComponentBarcode(el, el.dataset.value || "");
         });
 
         window.print();
