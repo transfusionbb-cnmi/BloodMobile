@@ -3925,15 +3925,27 @@ if (!ok) return;
 
       let fullName = escapeHtml(row.name || "");
       let saveTimeShort = escapeHtml((row.saveTime || "").replace(/:\d{2}$/, ""));
-      let bag = escapeHtml(row.bag || "");
+
+      // LIS encodes the full bag identifier, including the CN prefix.
+      // Keep the prefix only once so both new and previously prefixed records work.
+      let bagRaw = (row.bag || "").toString().trim().toUpperCase();
+      let lisBagRaw = bagRaw.startsWith("CN") ? bagRaw : `CN${bagRaw}`;
+      let bag = escapeHtml(lisBagRaw);
+
       let donorType = escapeHtml(row.type || "");
       let donorTypeText = donorType ? `(${donorType})` : "";
       let group = escapeHtml(row.group || "-");
       let sexShort = escapeHtml(sexToShort(row.gender || ""));
-      let c1 = escapeHtml(row.c1 || "");
-      let c2 = escapeHtml(row.c2 || "");
-      let e1 = escapeHtml(row.e1 || "");
-      let e2 = escapeHtml(row.e2 || "");
+      const toLisBarcodeValue = (value) => {
+        const raw = (value || "").toString().trim().toUpperCase();
+        if (!raw) return "";
+        return raw.startsWith("CN") ? raw : `CN${raw}`;
+      };
+
+      let c1 = escapeHtml(toLisBarcodeValue(row.c1));
+      let c2 = escapeHtml(toLisBarcodeValue(row.c2));
+      let e1 = escapeHtml(toLisBarcodeValue(row.e1));
+      let e2 = escapeHtml(toLisBarcodeValue(row.e2));
 
       let componentList = [
         { code: c1, tag: "C1" },
@@ -4008,11 +4020,10 @@ if (!ok) return;
       setTimeout(() => {
         document.querySelectorAll(".bc-bag-sticker").forEach(el => {
           JsBarcode(el, el.dataset.value || "", {
-            // Code 128 Auto selects the most suitable subset automatically.
-            // A narrower module width and smaller quiet-zone margin make the
-            // printed barcode denser and visually closer to the LIS label.
+            // Match LIS data structure: CN prefix + Code 128 Auto.
+            // Auto mode can switch between Set B and Set C for mixed letters/numbers.
             format: "CODE128",
-            width: 0.8,
+            width: 1,
             height: 32,
             displayValue: false,
             margin: 4,
@@ -4023,9 +4034,9 @@ if (!ok) return;
 
         document.querySelectorAll(".bc-main-sticker").forEach(el => {
           JsBarcode(el, el.dataset.value || "", {
-            // Use the same Code 128 Auto and density settings as the main bag sticker.
+            // Use the same CN-prefixed Code 128 Auto settings as the bag sticker.
             format: "CODE128",
-            width: 0.8,
+            width: 1,
             height: 32,
             displayValue: false,
             margin: 4,
@@ -4036,6 +4047,7 @@ if (!ok) return;
 
         document.querySelectorAll(".bc-component-sticker").forEach(el => {
           JsBarcode(el, el.dataset.value || "", {
+            // Component barcode also includes the CN prefix and uses Code 128 Auto.
             format: "CODE128",
             width: 0.80,
             height: 30,
