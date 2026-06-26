@@ -4023,8 +4023,9 @@ if (!ok) return;
 
         document.querySelectorAll(".bc-main-sticker").forEach(el => {
           JsBarcode(el, el.dataset.value || "", {
-            // Component labels: keep the same barcode pattern, tuned to fit the left-side label layout.
-            format: "CODE128B",
+            // Component-label upper barcode: use Code 128 Auto to match the bag-number barcode pattern more closely.
+            // This allows automatic subset switching and should make the line pattern closer to the LIS output.
+            format: "CODE128",
             width: 1,
             height: 32,
             displayValue: false,
