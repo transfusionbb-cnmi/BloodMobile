@@ -4008,14 +4008,14 @@ if (!ok) return;
       setTimeout(() => {
         document.querySelectorAll(".bc-bag-sticker").forEach(el => {
           JsBarcode(el, el.dataset.value || "", {
-            // Bag number labels: keep the original compact overall size,
-            // but use automatic Code 128 subset switching so the bars/modules
-            // are wider and closer to the LIS barcode pattern without stretching the barcode.
+            // Code 128 Auto selects the most suitable subset automatically.
+            // A narrower module width and smaller quiet-zone margin make the
+            // printed barcode denser and visually closer to the LIS label.
             format: "CODE128",
-            width: 1,
+            width: 0.8,
             height: 32,
             displayValue: false,
-            margin: 6,
+            margin: 4,
             textMargin: 0,
             fontSize: 0
           });
@@ -4023,13 +4023,12 @@ if (!ok) return;
 
         document.querySelectorAll(".bc-main-sticker").forEach(el => {
           JsBarcode(el, el.dataset.value || "", {
-            // Component-label upper barcode: use Code 128 Auto to match the bag-number barcode pattern more closely.
-            // This allows automatic subset switching and should make the line pattern closer to the LIS output.
+            // Use the same Code 128 Auto and density settings as the main bag sticker.
             format: "CODE128",
-            width: 1,
+            width: 0.8,
             height: 32,
             displayValue: false,
-            margin: 6,
+            margin: 4,
             textMargin: 0,
             fontSize: 0
           });
