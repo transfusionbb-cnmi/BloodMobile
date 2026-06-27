@@ -549,26 +549,23 @@
       }
 
       /*
-       * Main specimen/bag barcode
-       * - Fixed at 31 mm: 6 mm narrower than the 37 mm component barcode.
-       * - The bars are rendered from LIS-matched Code 128 codewords, not Auto mode.
-       * - Crisp edges reduce uneven thermal-printer rasterisation.
+       * TSC TE310 preset: 300 dpi = 12 dots/mm.
+       * The renderer calculates the physical SVG width from an exact 3-dot
+       * Code 128 module. This avoids fractional-dot bar widths in the driver.
        */
       .bc-bag-sticker,
-      .bc-main-sticker {
-        width: 31mm;
-        min-width: 31mm;
-        max-width: 31mm;
-        height: 8.2mm;
+      .bc-main-sticker,
+      .bc-component-sticker {
+        width: auto;
+        height: auto;
+        max-width: 42mm;
         display: block;
         overflow: visible;
+        flex: 0 0 auto;
         shape-rendering: crispEdges;
       }
 
       .bc-component-sticker {
-        width: 37mm;
-        height: 9.2mm;
-        display: block;
         margin: 0 !important;
       }
 
@@ -2171,7 +2168,7 @@
   <div id="tsc-template"></div>
 
   <script>
-    console.log("CNMI Blood Donation GitHub Version 2026-06-20 Barcode Fix");
+    console.log("CNMI Blood Donation GitHub Version 2026-06-27 Barcode Fix v13 - TSC TE310 300 dpi");
     let currentTablePage = "today";
 
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxmAMXoX2QEs3T-xb0Gyo-bBX2o-XUJ8n9YVb_rjiGDHee3xHs1sAiZf5CbZHkZI9BbQ/exec";
@@ -3977,12 +3974,20 @@ if (!ok) return;
       return codewords;
     }
 
+    const TSC_TE310_BARCODE_PROFILE = Object.freeze({
+      dpi: 300,
+      dotsPerMm: 12,
+      moduleDots: 3,
+      quietModules: 4
+    });
+
     function renderLisBarcode(svg, value, options = {}) {
       const {
-        widthMm = 31,
-        heightMm = 8.2,
+        heightDots = 96,
         barHeight = 32,
-        quietModules = 4
+        quietModules = TSC_TE310_BARCODE_PROFILE.quietModules,
+        moduleDots = TSC_TE310_BARCODE_PROFILE.moduleDots,
+        dotsPerMm = TSC_TE310_BARCODE_PROFILE.dotsPerMm
       } = options;
 
       let codewords;
@@ -3993,10 +3998,10 @@ if (!ok) return;
         // Operational fallback for unexpected legacy data only.
         JsBarcode(svg, value || "", {
           format: "CODE128",
-          width: 1,
-          height: barHeight,
+          width: moduleDots,
+          height: heightDots,
           displayValue: false,
-          margin: quietModules,
+          margin: quietModules * moduleDots,
           textMargin: 0,
           fontSize: 0
         });
@@ -4023,13 +4028,22 @@ if (!ok) return;
       });
 
       const totalModules = x + quietModules;
+      const widthDots = totalModules * moduleDots;
+      const widthMm = widthDots / dotsPerMm;
+      const heightMm = heightDots / dotsPerMm;
+
       svg.replaceChildren();
       svg.setAttribute("viewBox", `0 0 ${totalModules} ${barHeight}`);
       svg.setAttribute("preserveAspectRatio", "none");
       svg.setAttribute("width", `${widthMm}mm`);
       svg.setAttribute("height", `${heightMm}mm`);
+      svg.style.width = `${widthMm}mm`;
+      svg.style.height = `${heightMm}mm`;
       svg.setAttribute("shape-rendering", "crispEdges");
       svg.setAttribute("data-codewords", codewords.join(","));
+      svg.setAttribute("data-printer-dpi", String(TSC_TE310_BARCODE_PROFILE.dpi));
+      svg.setAttribute("data-module-dots", String(moduleDots));
+      svg.setAttribute("data-width-dots", String(widthDots));
 
       bars.forEach(bar => {
         const rect = document.createElementNS(svgNs, "rect");
@@ -4044,19 +4058,15 @@ if (!ok) return;
 
     function renderLisBagBarcode(svg, value) {
       renderLisBarcode(svg, value, {
-        widthMm: 31,
-        heightMm: 8.2,
-        barHeight: 32,
-        quietModules: 4
+        heightDots: 96,
+        barHeight: 32
       });
     }
 
     function renderLisComponentBarcode(svg, value) {
       renderLisBarcode(svg, value, {
-        widthMm: 37,
-        heightMm: 9.2,
-        barHeight: 30,
-        quietModules: 4
+        heightDots: 108,
+        barHeight: 30
       });
     }
 
